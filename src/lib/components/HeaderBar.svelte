@@ -1,8 +1,16 @@
 <script lang="ts">
   import { theme } from '../theme.svelte';
-  import { Copy, Check, Moon, Sun, Code2, Download } from 'lucide-svelte';
+  import { Copy, Check, Moon, Sun, Code2, Download, Sliders } from 'lucide-svelte';
 
-  let { onToggleCode, onOpenExport }: { onToggleCode: () => void; onOpenExport: () => void } = $props();
+  let {
+    onToggleCode,
+    onToggleAdjustments,
+    onOpenExport,
+  }: {
+    onToggleCode: () => void;
+    onToggleAdjustments: () => void;
+    onOpenExport: () => void;
+  } = $props();
 
   let copied = $state(false);
 
@@ -39,7 +47,7 @@
     </div>
   </div>
 
-  <!-- Right Actions: Variant Toggle, Preview Code, Copy, Export into... -->
+  <!-- Right Actions: Variant Toggle, Adjustments, Preview Code, Copy, Export into... -->
   <div class="flex items-center gap-2">
     <!-- Dark / Light Variant Segmented Control -->
     <div class="flex items-center bg-[#1a1e26] border border-[#262b35] rounded-lg p-0.5 text-xs">
@@ -62,6 +70,16 @@
     </div>
 
     <div class="w-[1px] h-4 bg-neutral-800 mx-1"></div>
+
+    <!-- Global Adjustments Drawer Button -->
+    <button
+      onclick={onToggleAdjustments}
+      class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#262b35] bg-[#1a1e26] hover:bg-[#202631] text-xs font-medium text-neutral-300 transition-colors cursor-pointer"
+      title="Adjust palette (Brightness, Contrast, Saturation, Warmth, Hue)"
+    >
+      <Sliders class="w-3.5 h-3.5 text-indigo-400" />
+      <span class="text-[11px]">Adjust</span>
+    </button>
 
     <!-- Toggle Raw TOML View -->
     <button

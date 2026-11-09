@@ -7,10 +7,12 @@
   import SlotEditor from './lib/components/SlotEditor.svelte';
   import TerminalPreview from './lib/components/TerminalPreview.svelte';
   import ExportModal from './lib/components/ExportModal.svelte';
+  import AdjustmentsDrawer from './lib/components/AdjustmentsDrawer.svelte';
   import { initEngine } from './worker/client';
   import { X, AlertTriangle } from 'lucide-svelte';
 
   let showTomlDrawer = $state(false);
+  let showAdjustmentsDrawer = $state(false);
   let showExportModal = $state(false);
 
   onMount(() => {
@@ -39,7 +41,14 @@
 
   <!-- Top Navigation & Controls -->
   <HeaderBar
-    onToggleCode={() => (showTomlDrawer = !showTomlDrawer)}
+    onToggleCode={() => {
+      showTomlDrawer = !showTomlDrawer;
+      if (showTomlDrawer) showAdjustmentsDrawer = false;
+    }}
+    onToggleAdjustments={() => {
+      showAdjustmentsDrawer = !showAdjustmentsDrawer;
+      if (showAdjustmentsDrawer) showTomlDrawer = false;
+    }}
     onOpenExport={() => (showExportModal = true)}
   />
 
@@ -53,7 +62,7 @@
 
     <!-- Right Column: Theme Inspector & Live Preview -->
     <aside class="w-96 flex flex-col h-full bg-[#0d0f12] overflow-hidden shrink-0 border-l border-[#1c2027]">
-      <!-- Live Code Preview Card (Clean Editor Tab, No macOS dots) -->
+      <!-- Live Code Preview Card (Multi-language selector, WCAG indicator, no macOS dots) -->
       <div class="p-3 border-b border-[#262b35] bg-[#14171d]/50 shrink-0">
         <TerminalPreview />
       </div>
@@ -64,14 +73,21 @@
       </div>
     </aside>
 
+    <!-- Global Adjustments Drawer Slide-Over -->
+    {#if showAdjustmentsDrawer}
+      <div class="absolute inset-y-0 right-0 w-84 z-40 shadow-2xl flex flex-col animate-in slide-in-from-right duration-150">
+        <AdjustmentsDrawer onClose={() => (showAdjustmentsDrawer = false)} />
+      </div>
+    {/if}
+
     <!-- Raw TOML Drawer Slide-Over -->
     {#if showTomlDrawer}
-      <div class="absolute inset-y-0 right-0 w-96 z-40 bg-[#14171d] border-l border-[#262b35] shadow-2xl flex flex-col">
+      <div class="absolute inset-y-0 right-0 w-96 z-40 bg-[#14171d] border-l border-[#262b35] shadow-2xl flex flex-col animate-in slide-in-from-right duration-150">
         <div class="h-12 border-b border-[#262b35] px-4 flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-neutral-300">Raw TOML Output</span>
           <button
             onclick={() => (showTomlDrawer = false)}
-            class="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
+            class="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer"
           >
             <X class="w-4 h-4" />
           </button>
@@ -82,7 +98,7 @@
       </div>
     {/if}
 
-    <!-- 30 Dev Tools Export Modal -->
+    <!-- 50 Dev Tools Export Modal -->
     {#if showExportModal}
       <ExportModal onClose={() => (showExportModal = false)} />
     {/if}
