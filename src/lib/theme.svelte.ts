@@ -1,6 +1,7 @@
 import { extractPalette, serializeToml } from '../worker/client';
 import type { ExtractResult, SchemeColors, SchemeData, Swatch } from '../worker/types';
 import { importThemeFile, type ImportResult } from './importers';
+import { convertThemeVariant } from './adjustments';
 
 export interface ActiveSlot {
   type: 'base' | 'ansi';
@@ -176,8 +177,10 @@ export class ThemeStore {
   }
 
   async setVariant(variant: 'dark' | 'light') {
-    this.scheme.variant = variant;
+    if (this.scheme.variant === variant && !this.cachedPixels) return;
+
     if (this.cachedPixels) {
+      this.scheme.variant = variant;
       this.isAnalyzing = true;
       try {
         const result = await extractPalette(this.cachedPixels.slice(), variant, 16);
@@ -189,7 +192,7 @@ export class ThemeStore {
           ansi: { colors: [...result.scheme.ansi.colors] },
           tools: { ...this.scheme.tools },
         };
-        this.toml = result.toml;
+        this.updateToml();
       } catch (err: any) {
         console.error('Error updating variant:', err);
         this.error = err?.message || 'Failed to update variant';
@@ -197,7 +200,35 @@ export class ThemeStore {
         this.isAnalyzing = false;
       }
     } else {
-      await this.updateToml();
+      // No image pixels present: perform intelligent mathematical dark <-> light conversion
+      this.scheme = convertThemeVariant(this.scheme, variant);
+
+      // Also update swatches so palette strip reflects the new variant
+      const rawColors = [
+        this.scheme.colors.bg,
+        this.scheme.colors.bg_alt,
+        this.scheme.colors.surface,
+        this.scheme.colors.border,
+        this.scheme.colors.fg_muted,
+        this.scheme.colors.fg_dim,
+        this.scheme.colors.fg,
+        this.scheme.colors.accent,
+        this.scheme.colors.accent_alt,
+        this.scheme.colors.accent_info,
+        this.scheme.colors.warn,
+        this.scheme.colors.blue,
+        ...this.scheme.ansi.colors,
+      ].filter(Boolean);
+
+      const uniqueColors = Array.from(new Set(rawColors.map((c) => c.toLowerCase())));
+      this.swatches = uniqueColors.map((hex) => ({
+        hex,
+        role: 'variant',
+        count: 100,
+        proportion: 1 / uniqueColors.length,
+      }));
+
+      this.updateToml();
     }
   }
 

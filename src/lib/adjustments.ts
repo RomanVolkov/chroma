@@ -1,4 +1,4 @@
-import type { SchemeColors } from '../worker/types';
+import type { SchemeColors, SchemeData } from '../worker/types';
 
 export interface ThemeAdjustments {
   brightness: number; // -100 to 100
@@ -219,4 +219,123 @@ export function autoFixContrast(colors: SchemeColors, variant: 'dark' | 'light')
   }
 
   return res;
+}
+
+// --- Algorithmic Dark <-> Light Variant Converter (when no image pixels are present) ---
+
+export function convertThemeVariant(scheme: SchemeData, targetVariant: 'dark' | 'light'): SchemeData {
+  if (scheme.variant === targetVariant) return scheme;
+
+  const isToLight = targetVariant === 'light';
+  const oldBg = hexToRgb(scheme.colors.bg);
+  const oldBgHsl = rgbToHsl(oldBg.r, oldBg.g, oldBg.b);
+  const bgHue = oldBgHsl.h;
+
+  let bg: string, bg_alt: string, bg_deep: string, surface: string, surface_hi: string, border: string, overlay: string;
+  let fg: string, fg_dim: string, fg_muted: string;
+  let selBg: string, selFg: string;
+
+  if (isToLight) {
+    const c1 = hslToRgb(bgHue, Math.min(oldBgHsl.s, 15), 97);
+    bg = rgbToHex(c1.r, c1.g, c1.b);
+    const c2 = hslToRgb(bgHue, Math.min(oldBgHsl.s, 15), 94);
+    bg_alt = rgbToHex(c2.r, c2.g, c2.b);
+    bg_deep = '#ffffff';
+    const c3 = hslToRgb(bgHue, Math.min(oldBgHsl.s, 15), 92);
+    surface = rgbToHex(c3.r, c3.g, c3.b);
+    const c4 = hslToRgb(bgHue, Math.min(oldBgHsl.s, 18), 86);
+    surface_hi = rgbToHex(c4.r, c4.g, c4.b);
+    const c5 = hslToRgb(bgHue, Math.min(oldBgHsl.s, 15), 80);
+    border = rgbToHex(c5.r, c5.g, c5.b);
+    overlay = '#57606a';
+
+    fg = '#1f2328';
+    fg_dim = '#57606a';
+    fg_muted = '#8c959f';
+
+    const cSel = hslToRgb(bgHue, 40, 88);
+    selBg = rgbToHex(cSel.r, cSel.g, cSel.b);
+    selFg = '#0969da';
+  } else {
+    const c1 = hslToRgb(bgHue, Math.max(oldBgHsl.s, 18), 10);
+    bg = rgbToHex(c1.r, c1.g, c1.b);
+    const c2 = hslToRgb(bgHue, Math.max(oldBgHsl.s, 18), 13);
+    bg_alt = rgbToHex(c2.r, c2.g, c2.b);
+    const c3 = hslToRgb(bgHue, Math.max(oldBgHsl.s, 20), 6);
+    bg_deep = rgbToHex(c3.r, c3.g, c3.b);
+    const c4 = hslToRgb(bgHue, Math.max(oldBgHsl.s, 18), 15);
+    surface = rgbToHex(c4.r, c4.g, c4.b);
+    const c5 = hslToRgb(bgHue, Math.max(oldBgHsl.s, 18), 19);
+    surface_hi = rgbToHex(c5.r, c5.g, c5.b);
+    const c6 = hslToRgb(bgHue, Math.max(oldBgHsl.s, 15), 24);
+    border = rgbToHex(c6.r, c6.g, c6.b);
+    overlay = '#6e7681';
+
+    fg = '#e6edf3';
+    fg_dim = '#8b949e';
+    fg_muted = '#6e7681';
+
+    const cSel = hslToRgb(bgHue, 35, 20);
+    selBg = rgbToHex(cSel.r, cSel.g, cSel.b);
+    selFg = '#f0f6fc';
+  }
+
+  // Adjust accents: preserve hue, modulate lightness so they stand out cleanly
+  const adjustAccent = (hex: string): string => {
+    const rgb = hexToRgb(hex);
+    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const targetL = isToLight ? Math.min(42, Math.max(28, hsl.l * 0.6)) : Math.max(68, Math.min(80, hsl.l * 1.4));
+    const res = hslToRgb(hsl.h, Math.max(hsl.s, 45), targetL);
+    return rgbToHex(res.r, res.g, res.b);
+  };
+
+  const colors: SchemeColors = {
+    bg,
+    bg_alt,
+    bg_deep,
+    fg,
+    fg_dim,
+    fg_muted,
+    surface,
+    surface_hi,
+    border,
+    overlay,
+    cursor: adjustAccent(scheme.colors.cursor || scheme.colors.accent),
+    selection_bg: selBg,
+    selection_fg: selFg,
+    accent: adjustAccent(scheme.colors.accent),
+    accent_alt: adjustAccent(scheme.colors.accent_alt),
+    accent_info: adjustAccent(scheme.colors.accent_info),
+    warn: adjustAccent(scheme.colors.warn),
+    blue: adjustAccent(scheme.colors.blue),
+  };
+
+  // Convert ANSI colors
+  const ansi = [...(scheme.ansi?.colors || [])];
+  if (ansi.length >= 16) {
+    if (isToLight) {
+      ansi[0] = '#24292f'; // black
+      ansi[7] = '#ffffff'; // white
+      ansi[8] = '#6e7681'; // bright black
+      ansi[15] = '#1f2328';// bright white
+      for (let i = 1; i < 7; i++) ansi[i] = adjustAccent(ansi[i]);
+      for (let i = 9; i < 15; i++) ansi[i] = adjustAccent(ansi[i]);
+    } else {
+      ansi[0] = bg;
+      ansi[7] = fg;
+      ansi[8] = '#484f58';
+      ansi[15] = '#ffffff';
+      for (let i = 1; i < 7; i++) ansi[i] = adjustAccent(ansi[i]);
+      for (let i = 9; i < 15; i++) ansi[i] = adjustAccent(ansi[i]);
+    }
+  }
+
+  return {
+    ...scheme,
+    variant: targetVariant,
+    colors,
+    ansi: {
+      colors: ansi,
+    },
+  };
 }
