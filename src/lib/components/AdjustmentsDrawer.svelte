@@ -26,8 +26,7 @@
 
   function handleAutoFix() {
     theme.scheme.colors = autoFixContrast(theme.scheme.colors, theme.scheme.variant);
-    baseColorsSnapshot = { ...theme.scheme.colors };
-    adjustments = { ...DEFAULT_ADJUSTMENTS };
+    baseColorsSnapshot = autoFixContrast(baseColorsSnapshot, theme.scheme.variant);
     theme.updateToml();
   }
 </script>
