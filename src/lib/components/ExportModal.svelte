@@ -59,7 +59,6 @@
         root.folder(subfolder)?.file(fname, content);
       }
 
-      // Also place the primary dotfiles toml at root of the zip
       root.file(`${slug}.toml`, EXPORTERS[0].generate(theme.scheme));
 
       const blob = await zip.generateAsync({ type: 'blob' });
@@ -79,119 +78,110 @@
   }
 </script>
 
-<!-- Backdrop Modal -->
-<div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-6 animate-in fade-in duration-150">
-  <div class="w-full max-w-4xl h-[640px] bg-[#14171d] border border-[#262b35] rounded-xl shadow-2xl flex flex-col overflow-hidden">
-    <!-- Header -->
-    <div class="h-14 border-b border-[#262b35] px-5 flex items-center justify-between shrink-0">
-      <div class="flex items-center gap-3">
-        <FileCode class="w-5 h-5 text-indigo-400" />
-        <div>
-          <h2 class="text-sm font-semibold text-neutral-100">Export into...</h2>
-          <p class="text-[11px] text-neutral-400">Export for {EXPORTERS.length} popular developer editors, terminals & environments</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button
-          onclick={downloadAllZip}
-          disabled={isZipping}
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:text-indigo-200 text-xs font-medium transition-all cursor-pointer"
-        >
-          <Archive class="w-3.5 h-3.5" />
-          <span>{isZipping ? 'Bundling...' : `Download All ${EXPORTERS.length} (.ZIP)`}</span>
-        </button>
-
-        <button
-          onclick={onClose}
-          class="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors ml-1 cursor-pointer"
-        >
-          <X class="w-4 h-4" />
-        </button>
+<!-- Non-blocking Right Studio Drawer (leaves Code Preview and Palette 100% visible) -->
+<div class="h-full w-full bg-[#14171d] border-l border-[#262b35] shadow-2xl flex flex-col overflow-hidden select-none">
+  <!-- Header -->
+  <div class="h-13 border-b border-[#262b35] px-4 flex items-center justify-between shrink-0 bg-[#101318]">
+    <div class="flex items-center gap-2.5">
+      <FileCode class="w-4 h-4 text-indigo-400" />
+      <div>
+        <h2 class="text-xs font-semibold text-neutral-100 uppercase tracking-wider">Export into...</h2>
+        <p class="text-[10px] text-neutral-400">{EXPORTERS.length} tool formats supported</p>
       </div>
     </div>
 
-    <!-- Main Modal Body: Split view -->
-    <div class="flex-1 flex overflow-hidden">
-      <!-- Left: Search & Exporter Selector List -->
-      <div class="w-72 border-r border-[#262b35] flex flex-col bg-[#101318] shrink-0">
-        <!-- Search bar -->
-        <div class="p-3 border-b border-[#1c2027]">
-          <div class="relative">
-            <Search class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input
-              type="text"
-              bind:value={searchQuery}
-              placeholder="Search formats..."
-              class="w-full bg-[#1a1e26] border border-[#262b35] focus:border-indigo-500 rounded-md pl-8 pr-3 py-1 text-xs text-neutral-200 focus:outline-hidden"
-            />
-          </div>
+    <div class="flex items-center gap-1.5">
+      <button
+        onclick={downloadAllZip}
+        disabled={isZipping}
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:text-indigo-200 text-[11px] font-medium transition-all cursor-pointer"
+        title="Download all formats in a single organized zip archive"
+      >
+        <Archive class="w-3.5 h-3.5" />
+        <span>{isZipping ? 'Zipping...' : 'Download (.ZIP)'}</span>
+      </button>
 
-          <!-- Category filter tabs -->
-          <div class="flex items-center gap-1 mt-2.5 text-[10px] overflow-x-auto">
-            {#each ['All', 'Editor', 'Terminal', 'CLI', 'Desktop', 'App'] as cat}
-              <button
-                onclick={() => (selectedCategory = cat as any)}
-                class="px-2 py-0.5 rounded transition-colors {selectedCategory === cat ? 'bg-[#262b35] text-white font-medium' : 'text-neutral-400 hover:text-neutral-300'}"
-              >
-                {cat}
-              </button>
-            {/each}
-          </div>
-        </div>
+      <button
+        onclick={onClose}
+        class="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors ml-1 cursor-pointer"
+      >
+        <X class="w-4 h-4" />
+      </button>
+    </div>
+  </div>
 
-        <!-- Exporters List -->
-        <div class="flex-1 overflow-y-auto p-2 space-y-1">
-          {#each filteredExporters as exp}
-            <button
-              onclick={() => (selectedExporter = exp)}
-              class="w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors cursor-pointer {selectedExporter.id === exp.id ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 font-medium' : 'text-neutral-300 hover:bg-[#1a1e26] border border-transparent'}"
-            >
-              <div class="flex flex-col min-w-0">
-                <span class="truncate">{exp.name}</span>
-                <span class="text-[10px] text-neutral-400 font-mono">{exp.filename(slug)}</span>
-              </div>
-              <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/40 text-neutral-400 shrink-0">
-                {exp.category}
-              </span>
-            </button>
-          {/each}
+  <!-- Search & Category Filters -->
+  <div class="p-3 border-b border-[#1c2027] bg-[#12151b] shrink-0">
+    <div class="relative">
+      <Search class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+      <input
+        type="text"
+        bind:value={searchQuery}
+        placeholder="Filter formats (e.g. neovim, kitty, idea)..."
+        class="w-full bg-[#1a1e26] border border-[#262b35] focus:border-indigo-500 rounded-md pl-8 pr-3 py-1 text-xs text-neutral-200 focus:outline-hidden"
+      />
+    </div>
+
+    <!-- Category filter tabs -->
+    <div class="flex items-center gap-1 mt-2 text-[10px] overflow-x-auto">
+      {#each ['All', 'Editor', 'Terminal', 'CLI', 'Desktop', 'App'] as cat}
+        <button
+          onclick={() => (selectedCategory = cat as any)}
+          class="px-2 py-0.5 rounded transition-colors cursor-pointer {selectedCategory === cat ? 'bg-[#262b35] text-white font-medium shadow-xs' : 'text-neutral-400 hover:text-neutral-300'}"
+        >
+          {cat}
+        </button>
+      {/each}
+    </div>
+  </div>
+
+  <!-- Main Body: Format selector + preview -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Format selector column (Left) -->
+    <div class="w-44 border-r border-[#262b35] flex flex-col bg-[#101318] shrink-0 overflow-y-auto p-1.5 space-y-1">
+      {#each filteredExporters as exp}
+        <button
+          onclick={() => (selectedExporter = exp)}
+          class="w-full text-left px-2.5 py-1.5 rounded text-[11px] flex flex-col transition-colors cursor-pointer {selectedExporter.id === exp.id ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 font-medium' : 'text-neutral-300 hover:bg-[#1a1e26] border border-transparent'}"
+        >
+          <span class="truncate">{exp.name}</span>
+          <span class="text-[9.5px] text-neutral-400 font-mono truncate">{exp.filename(slug)}</span>
+        </button>
+      {/each}
+    </div>
+
+    <!-- Preview column (Right) -->
+    <div class="flex-1 flex flex-col bg-[#0d0f12] overflow-hidden">
+      <!-- Toolbar -->
+      <div class="h-9 border-b border-[#262b35] px-3 flex items-center justify-between bg-[#14171d]/60 text-xs shrink-0">
+        <span class="font-mono text-neutral-300 text-[10.5px] font-medium truncate">{currentFilename}</span>
+        <div class="flex items-center gap-1.5">
+          <button
+            onclick={copyCode}
+            class="flex items-center gap-1 px-2 py-0.5 rounded bg-[#1a1e26] border border-[#262b35] hover:bg-[#202631] text-[10.5px] text-neutral-300 transition-colors cursor-pointer"
+          >
+            {#if copied}
+              <Check class="w-3 h-3 text-emerald-400" />
+              <span class="text-emerald-400">Copied</span>
+            {:else}
+              <Copy class="w-3 h-3 text-neutral-400" />
+              <span>Copy</span>
+            {/if}
+          </button>
+
+          <button
+            onclick={downloadCurrent}
+            class="flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-500 text-[10.5px] font-medium text-white transition-colors cursor-pointer"
+          >
+            <Download class="w-3 h-3" />
+            <span>Save</span>
+          </button>
         </div>
       </div>
 
-      <!-- Right: Code Preview & File Actions -->
-      <div class="flex-1 flex flex-col bg-[#0d0f12] overflow-hidden">
-        <!-- Preview Action Bar -->
-        <div class="h-10 border-b border-[#262b35] px-4 flex items-center justify-between bg-[#14171d]/60 text-xs">
-          <span class="font-mono text-neutral-300 text-[11px] font-medium">{currentFilename}</span>
-          <div class="flex items-center gap-2">
-            <button
-              onclick={copyCode}
-              class="flex items-center gap-1 px-2.5 py-1 rounded bg-[#1a1e26] border border-[#262b35] hover:bg-[#202631] text-[11px] text-neutral-300 transition-colors cursor-pointer"
-            >
-              {#if copied}
-                <Check class="w-3 h-3 text-emerald-400" />
-                <span class="text-emerald-400">Copied!</span>
-              {:else}
-                <Copy class="w-3 h-3 text-neutral-400" />
-                <span>Copy</span>
-              {/if}
-            </button>
-
-            <button
-              onclick={downloadCurrent}
-              class="flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-[11px] font-medium text-white transition-colors cursor-pointer"
-            >
-              <Download class="w-3 h-3" />
-              <span>Download File</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Code Content -->
-        <div class="flex-1 p-4 overflow-auto">
-          <pre class="font-mono text-[11px] leading-relaxed text-neutral-300 select-all whitespace-pre-wrap">{previewCode}</pre>
-        </div>
+      <!-- Preview code text -->
+      <div class="flex-1 p-3 overflow-auto">
+        <pre class="font-mono text-[11px] leading-relaxed text-neutral-300 select-all whitespace-pre-wrap">{previewCode}</pre>
       </div>
     </div>
   </div>

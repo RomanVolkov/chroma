@@ -25,7 +25,7 @@
   });
 </script>
 
-<div class="h-screen w-screen flex flex-col bg-[#0d0f12] text-[#e6edf3] overflow-hidden">
+<div class="h-screen w-screen flex flex-col bg-[#0d0f12] text-[#e6edf3] overflow-hidden font-mono">
   <!-- Error Notification Banner (if any) -->
   {#if theme.error}
     <div class="bg-red-950/90 border-b border-red-800/80 px-4 py-2 flex items-center justify-between text-xs text-red-200 z-50">
@@ -33,7 +33,7 @@
         <AlertTriangle class="w-4 h-4 text-red-400 shrink-0" />
         <span>{theme.error}</span>
       </div>
-      <button onclick={() => (theme.error = null)} class="p-1 hover:bg-red-900/50 rounded">
+      <button onclick={() => (theme.error = null)} class="p-1 hover:bg-red-900/50 rounded cursor-pointer">
         <X class="w-3.5 h-3.5" />
       </button>
     </div>
@@ -43,44 +43,67 @@
   <HeaderBar
     onToggleCode={() => {
       showTomlDrawer = !showTomlDrawer;
-      if (showTomlDrawer) showAdjustmentsDrawer = false;
+      if (showTomlDrawer) {
+        showAdjustmentsDrawer = false;
+        showExportModal = false;
+      }
     }}
     onToggleAdjustments={() => {
       showAdjustmentsDrawer = !showAdjustmentsDrawer;
-      if (showAdjustmentsDrawer) showTomlDrawer = false;
+      if (showAdjustmentsDrawer) {
+        showTomlDrawer = false;
+        showExportModal = false;
+      }
     }}
-    onOpenExport={() => (showExportModal = true)}
+    onOpenExport={() => {
+      showExportModal = !showExportModal;
+      if (showExportModal) {
+        showAdjustmentsDrawer = false;
+        showTomlDrawer = false;
+      }
+    }}
   />
 
-  <!-- Main Studio Workspace -->
+  <!-- Main Studio Workspace (Center Stage: Code Preview + Palette; Right Sidebar: Image & Slot Editor) -->
   <div class="flex-1 flex overflow-hidden relative">
-    <!-- Left Column: Single-Image Focus & Vertical Color Bars Palette -->
-    <div class="flex-1 flex flex-col h-full border-r border-[#262b35] overflow-hidden">
-      <ImageCanvas />
+    <!-- Center Stage: Full-Size Code Preview & Extracted Palette Strip -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+      <div class="flex-1 overflow-hidden">
+        <TerminalPreview />
+      </div>
       <PaletteBars />
     </div>
 
-    <!-- Right Column: Theme Inspector & Live Preview -->
-    <aside class="w-96 flex flex-col h-full bg-[#0d0f12] overflow-hidden shrink-0 border-l border-[#1c2027]">
-      <!-- Live Code Preview Card (Multi-language selector, WCAG indicator, no macOS dots) -->
-      <div class="p-3 border-b border-[#262b35] bg-[#14171d]/50 shrink-0">
-        <TerminalPreview />
+    <!-- Right Sidebar: Photo Dropper & Slot Color Swatches -->
+    <aside class="w-[430px] flex flex-col h-full bg-[#0d0f12] overflow-hidden shrink-0 border-l border-[#262b35]">
+      <!-- Focused Image Dropper & Canvas (Top Half) -->
+      <div class="h-64 shrink-0 border-b border-[#262b35] flex flex-col bg-[#0a0c0f] relative overflow-hidden">
+        <ImageCanvas />
       </div>
 
-      <!-- Scrollable Color Slot Editor -->
-      <div class="flex-1 overflow-y-auto">
+      <!-- Scrollable Color Slot Editor (Bottom Half) -->
+      <div class="flex-1 overflow-y-auto bg-[#0d0f12]">
         <SlotEditor />
       </div>
     </aside>
 
-    <!-- Global Adjustments Drawer Slide-Over -->
+    <!-- Slide-over Right Drawers (Overlays sidebar without covering the Code Preview and Palette) -->
+
+    <!-- 1. Export Into Drawer (50 formats) -->
+    {#if showExportModal}
+      <div class="absolute inset-y-0 right-0 w-[520px] z-40 shadow-2xl flex flex-col animate-in slide-in-from-right duration-150">
+        <ExportModal onClose={() => (showExportModal = false)} />
+      </div>
+    {/if}
+
+    <!-- 2. Global Adjustments Drawer -->
     {#if showAdjustmentsDrawer}
-      <div class="absolute inset-y-0 right-0 w-84 z-40 shadow-2xl flex flex-col animate-in slide-in-from-right duration-150">
+      <div class="absolute inset-y-0 right-0 w-88 z-40 shadow-2xl flex flex-col animate-in slide-in-from-right duration-150">
         <AdjustmentsDrawer onClose={() => (showAdjustmentsDrawer = false)} />
       </div>
     {/if}
 
-    <!-- Raw TOML Drawer Slide-Over -->
+    <!-- 3. Raw TOML Drawer Slide-Over -->
     {#if showTomlDrawer}
       <div class="absolute inset-y-0 right-0 w-96 z-40 bg-[#14171d] border-l border-[#262b35] shadow-2xl flex flex-col animate-in slide-in-from-right duration-150">
         <div class="h-12 border-b border-[#262b35] px-4 flex items-center justify-between">
@@ -96,11 +119,6 @@
           <pre class="font-mono text-[11px] leading-relaxed text-neutral-300 select-all whitespace-pre-wrap">{theme.toml}</pre>
         </div>
       </div>
-    {/if}
-
-    <!-- 50 Dev Tools Export Modal -->
-    {#if showExportModal}
-      <ExportModal onClose={() => (showExportModal = false)} />
     {/if}
   </div>
 </div>
