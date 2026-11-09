@@ -24,13 +24,19 @@
   <!-- Bar Header & Action Bar -->
   <div class="h-8 px-4 flex items-center justify-between border-b border-[#1c2027] text-xs">
     <div class="flex items-center gap-2">
-      <span class="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Extracted Palette</span>
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+        {#if theme.lastImportedFormat}
+          Theme Palette ({theme.lastImportedFormat})
+        {:else}
+          Extracted Palette
+        {/if}
+      </span>
       {#if theme.swatches.length > 0}
         <span class="text-[10px] text-neutral-400 font-mono">({theme.swatches.length} tones)</span>
       {/if}
     </div>
 
-    {#if theme.swatches.length > 0}
+    {#if theme.cachedPixels && theme.swatches.length > 0}
       <button
         onclick={handleDistribute}
         class="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 hover:text-indigo-200 text-[11px] font-medium transition-all cursor-pointer"

@@ -3,9 +3,9 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [tailwindcss(), svelte()],
-  base: './',
+  base: command === 'serve' ? '/' : (process.env.BASE_PATH || '/chroma/'),
   worker: {
     format: 'es',
   },
@@ -13,4 +13,4 @@ export default defineConfig({
     port: 5173,
     open: false,
   },
-});
+}));

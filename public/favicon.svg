@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Chroma Logo">
+  <rect x="9" y="15" width="110" height="98" rx="19" fill="#242C3B"/>
+  <path d="M30 43 L51 63 L30 83" fill="none" stroke="#F4F5F8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="62" y="47" width="17" height="17" rx="3" fill="#F38BA8"/>
+  <rect x="84" y="47" width="17" height="17" rx="3" fill="#A6E3A1"/>
+  <rect x="62" y="69" width="17" height="17" rx="3" fill="#89B4FA"/>
+  <rect x="84" y="69" width="17" height="17" rx="3" fill="#F9E2AF"/>
+</svg>

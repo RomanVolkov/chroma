@@ -33,6 +33,8 @@
         renderCanvas();
         fitToView();
       };
+    } else if (!theme.imageUrl) {
+      currentImage = null;
     }
   });
 
@@ -60,8 +62,12 @@
     e.preventDefault();
     isDragging = false;
     const file = e.dataTransfer?.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      theme.loadFile(file);
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        theme.loadFile(file);
+      } else {
+        theme.importTheme(file);
+      }
     }
   }
 
@@ -69,7 +75,12 @@
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
-      theme.loadFile(file);
+      if (file.type.startsWith('image/')) {
+        theme.loadFile(file);
+      } else {
+        theme.importTheme(file);
+      }
+      input.value = '';
     }
   }
 
@@ -152,15 +163,30 @@
   aria-label="Image Studio Canvas"
 >
   {#if !theme.imageUrl}
-    <!-- Empty State: Drop zone -->
-    <label class="flex flex-col items-center justify-center p-12 border border-dashed border-[#262b35] hover:border-indigo-500/50 rounded-2xl bg-[#14171d]/60 backdrop-blur-xs cursor-pointer transition-all hover:bg-[#1a1e26]/80 group max-w-sm text-center">
-      <input type="file" accept="image/*" class="hidden" onchange={handleFileInput} />
-      <div class="w-12 h-12 rounded-xl bg-neutral-900 border border-[#262b35] flex items-center justify-center mb-4 group-hover:scale-110 group-hover:border-indigo-500/40 transition-all text-neutral-400 group-hover:text-indigo-400">
-        <Upload class="w-5 h-5" />
-      </div>
-      <span class="text-sm font-medium text-neutral-200 mb-1">Open wallpaper or photo</span>
-      <span class="text-xs text-neutral-400">Drag & drop image file or click to browse</span>
-    </label>
+    <!-- Empty State: Drop zone or Imported Theme view -->
+    <div class="flex flex-col items-center justify-center p-6 text-center max-w-sm w-full">
+      {#if theme.lastImportedFormat}
+        <div class="mb-4 flex flex-col items-center animate-in fade-in duration-200">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[11px] font-medium mb-1.5 shadow-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            Imported from {theme.lastImportedFormat}
+          </div>
+          <span class="text-sm font-semibold text-neutral-200 tracking-wide">{theme.scheme.name}</span>
+          <span class="text-[11px] text-neutral-400 mt-0.5">Active theme loaded from file</span>
+        </div>
+      {/if}
+
+      <label class="flex flex-col items-center justify-center p-5 w-full border border-dashed border-[#262b35] hover:border-indigo-500/50 rounded-xl bg-[#14171d]/60 backdrop-blur-xs cursor-pointer transition-all hover:bg-[#1a1e26]/80 group">
+        <input type="file" accept="image/*,.toml,.json,.yaml,.yml,.conf,.lua,.ini,.Xresources,text/plain" class="hidden" onchange={handleFileInput} />
+        <div class="w-9 h-9 rounded-lg bg-neutral-900 border border-[#262b35] flex items-center justify-center mb-2 group-hover:scale-105 group-hover:border-indigo-500/40 transition-all text-neutral-400 group-hover:text-indigo-400">
+          <Upload class="w-4 h-4" />
+        </div>
+        <span class="text-xs font-medium text-neutral-200 mb-0.5">
+          {theme.lastImportedFormat ? 'Replace with photo or theme' : 'Open wallpaper or photo'}
+        </span>
+        <span class="text-[10px] text-neutral-400">Drag & drop file or click to browse</span>
+      </label>
+    </div>
   {:else}
     <!-- Zoomable / Pannable Image Layer -->
     <div

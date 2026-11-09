@@ -1,5 +1,6 @@
 import { extractPalette, serializeToml } from '../worker/client';
 import type { ExtractResult, SchemeColors, SchemeData, Swatch } from '../worker/types';
+import { importThemeFile, type ImportResult } from './importers';
 
 export interface ActiveSlot {
   type: 'base' | 'ansi';
@@ -44,6 +45,9 @@ export class ThemeStore {
   imageHeight = $state<number>(0);
   isAnalyzing = $state<boolean>(false);
   error = $state<string | null>(null);
+  statusMessage = $state<string | null>(null);
+  lastImportedFormat = $state<string | null>(null);
+  lastImportedName = $state<string | null>(null);
 
   swatches = $state<Swatch[]>([]);
   scheme = $state<SchemeData>(JSON.parse(JSON.stringify(DEFAULT_SCHEME)));
@@ -61,6 +65,8 @@ export class ThemeStore {
   async loadFile(file: File) {
     this.isAnalyzing = true;
     this.error = null;
+    this.lastImportedFormat = null;
+    this.lastImportedName = null;
 
     try {
       if (this.imageUrl) {
@@ -195,6 +201,88 @@ export class ThemeStore {
     }
 
     await this.updateToml();
+  }
+
+  async importTheme(file: File): Promise<ImportResult> {
+    this.error = null;
+    this.statusMessage = null;
+
+    try {
+      const text = await file.text();
+      const result = importThemeFile(text, file.name);
+
+      if (!result.success || result.confidence < 90) {
+        const confText = result.confidence > 0 ? ` (${result.confidence}% confidence < 90% required)` : '';
+        const msg = result.error || `Import dropped: confidence too low${confText}.`;
+        this.error = msg;
+        return result;
+      }
+
+      if (result.scheme) {
+        // Drop selected image so UI represents the imported theme
+        if (this.imageUrl) {
+          URL.revokeObjectURL(this.imageUrl);
+          this.imageUrl = null;
+        }
+        this.cachedPixels = null;
+        this.imageWidth = 0;
+        this.imageHeight = 0;
+        this.lastImportedFormat = result.formatName;
+        this.lastImportedName = file.name;
+
+        this.scheme = {
+          name: result.scheme.name || this.scheme.name,
+          variant: result.scheme.variant || this.scheme.variant,
+          colors: { ...result.scheme.colors },
+          ansi: { colors: [...result.scheme.ansi.colors] },
+          tools: { ...this.scheme.tools },
+        };
+
+        // Create swatches for palette bar from unique imported theme colors
+        const rawColors = [
+          result.scheme.colors.bg,
+          result.scheme.colors.bg_alt,
+          result.scheme.colors.surface,
+          result.scheme.colors.border,
+          result.scheme.colors.fg_muted,
+          result.scheme.colors.fg_dim,
+          result.scheme.colors.fg,
+          result.scheme.colors.accent,
+          result.scheme.colors.accent_alt,
+          result.scheme.colors.accent_info,
+          result.scheme.colors.warn,
+          result.scheme.colors.blue,
+          ...result.scheme.ansi.colors,
+        ].filter(Boolean);
+
+        const uniqueColors = Array.from(new Set(rawColors.map((c) => c.toLowerCase())));
+        this.swatches = uniqueColors.map((hex) => ({
+          hex,
+          role: 'imported',
+          count: 100,
+          proportion: 1 / uniqueColors.length,
+        }));
+
+        await this.updateToml();
+        this.statusMessage = `Successfully imported ${result.formatName} (${result.confidence}% confidence)`;
+        setTimeout(() => {
+          if (this.statusMessage?.startsWith('Successfully imported')) {
+            this.statusMessage = null;
+          }
+        }, 4000);
+      }
+
+      return result;
+    } catch (err: any) {
+      console.error('Failed to import file:', err);
+      this.error = `Failed to read file: ${err?.message || err}`;
+      return {
+        success: false,
+        confidence: 0,
+        formatName: 'Error',
+        error: err?.message,
+      };
+    }
   }
 
   async updateToml() {

@@ -10,7 +10,8 @@
     "build": "npm run build:wasm && vite build",
     "preview": "vite preview",
     "test:go": "go test ./wasm/...",
-    "test": "npm run test:go"
+    "test:import": "npx tsx src/lib/importers/index.test.ts",
+    "test": "npm run test:go && npm run test:import"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",

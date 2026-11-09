@@ -9,7 +9,7 @@
   import ExportModal from './lib/components/ExportModal.svelte';
   import AdjustmentsDrawer from './lib/components/AdjustmentsDrawer.svelte';
   import { initEngine } from './worker/client';
-  import { X, AlertTriangle } from 'lucide-svelte';
+  import { X, AlertTriangle, Check } from 'lucide-svelte';
 
   let showTomlDrawer = $state(false);
   let showAdjustmentsDrawer = $state(false);
@@ -26,6 +26,19 @@
 </script>
 
 <div class="h-screen w-screen flex flex-col bg-[#0d0f12] text-[#e6edf3] overflow-hidden font-mono">
+  <!-- Status Success Notification Banner -->
+  {#if theme.statusMessage}
+    <div class="bg-emerald-950/90 border-b border-emerald-800/80 px-4 py-2 flex items-center justify-between text-xs text-emerald-200 z-50">
+      <div class="flex items-center gap-2">
+        <Check class="w-4 h-4 text-emerald-400 shrink-0" />
+        <span>{theme.statusMessage}</span>
+      </div>
+      <button onclick={() => (theme.statusMessage = null)} class="p-1 hover:bg-emerald-900/50 rounded cursor-pointer">
+        <X class="w-3.5 h-3.5" />
+      </button>
+    </div>
+  {/if}
+
   <!-- Error Notification Banner (if any) -->
   {#if theme.error}
     <div class="bg-red-950/90 border-b border-red-800/80 px-4 py-2 flex items-center justify-between text-xs text-red-200 z-50">

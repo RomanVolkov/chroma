@@ -1,6 +1,6 @@
 <script lang="ts">
   import { theme } from '../theme.svelte';
-  import { Copy, Check, Moon, Sun, Code2, Download, Sliders } from 'lucide-svelte';
+  import { Copy, Check, Moon, Sun, Code2, Download, Sliders, Upload } from 'lucide-svelte';
 
   let {
     onToggleCode,
@@ -24,13 +24,22 @@
     theme.scheme.name = (e.target as HTMLInputElement).value;
     theme.updateToml();
   }
+
+  function handleImportFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      theme.importTheme(file);
+      input.value = '';
+    }
+  }
 </script>
 
 <header class="h-13 border-b border-[#262b35] bg-[#14171d] px-4 flex items-center justify-between select-none shrink-0 z-30">
   <!-- Brand + Theme Name Input -->
   <div class="flex items-center gap-3">
     <div class="flex items-center gap-2">
-      <div class="w-3 h-3 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500/50"></div>
+      <img src="./favicon.svg" alt="Chroma Logo" class="w-5 h-5 rounded-xs" />
       <span class="font-bold text-xs tracking-widest uppercase text-neutral-200">CHROMA</span>
     </div>
 
@@ -104,6 +113,21 @@
         <span class="text-[11px]">Copy TOML</span>
       {/if}
     </button>
+
+    <!-- Import Theme Button (>= 90% confidence gate) -->
+    <label
+      class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#262b35] bg-[#1a1e26] hover:bg-[#202631] text-xs font-medium text-neutral-300 hover:text-white transition-all cursor-pointer"
+      title="Import existing theme config (Dotfiles TOML, Kitty, Alacritty, Ghostty, VS Code, WezTerm, Foot, etc. - requires >=90% confidence)"
+    >
+      <Upload class="w-3.5 h-3.5 text-indigo-400" />
+      <span class="text-[11px]">Import</span>
+      <input
+        type="file"
+        accept=".toml,.json,.yaml,.yml,.conf,.lua,.ini,.Xresources,text/plain"
+        class="hidden"
+        onchange={handleImportFile}
+      />
+    </label>
 
     <!-- Primary Export Button: "Export into..." -->
     <button
