@@ -163,3 +163,66 @@ func clampUint8(v float64) uint8 {
 	}
 	return uint8(math.Round(v))
 }
+
+// RelativeLuminance returns standard WCAG 2.0 relative luminance [0, 1].
+func RelativeLuminance(c RGB) float64 {
+	rLinear := sRGBToLinear(float64(c.R) / 255.0)
+	gLinear := sRGBToLinear(float64(c.G) / 255.0)
+	bLinear := sRGBToLinear(float64(c.B) / 255.0)
+	return 0.2126*rLinear + 0.7152*gLinear + 0.0722*bLinear
+}
+
+// ContrastRatio calculates the WCAG 2.0 contrast ratio between two RGB colors (1.0 to 21.0).
+func ContrastRatio(c1, c2 RGB) float64 {
+	l1 := RelativeLuminance(c1)
+	l2 := RelativeLuminance(c2)
+	lighter := math.Max(l1, l2)
+	darker := math.Min(l1, l2)
+	return (lighter + 0.05) / (darker + 0.05)
+}
+
+// EnsureContrastHex adjusts the lightness of hex color in CIELAB space so that
+// it meets minRatio against bgRGB (default 4.5:1 for WCAG AA).
+func EnsureContrastHex(hex string, bgRGB RGB, minRatio float64, isDark bool) string {
+	rgb, err := HexToRGB(hex)
+	if err != nil {
+		if isDark {
+			return "#e6edf3"
+		}
+		return "#1f2328"
+	}
+
+	ratio := ContrastRatio(rgb, bgRGB)
+	if ratio >= minRatio && strings.ToLower(hex) != strings.ToLower(RGBToHex(bgRGB)) {
+		return RGBToHex(rgb)
+	}
+
+	lab := RGBToLab(rgb)
+	// Ensure minimal chroma so the color doesn't completely collapse to pure grayscale
+	if lab.Chroma() < 12.0 {
+		lab.A *= 1.5
+		lab.B *= 1.5
+	}
+
+	bestHex := hex
+	bestRatio := ratio
+
+	for step := 0; step < 35; step++ {
+		if isDark {
+			lab.L = math.Min(96.0, lab.L+2.5)
+		} else {
+			lab.L = math.Max(8.0, lab.L-2.5)
+		}
+		candRGB := LabToRGB(lab)
+		curRatio := ContrastRatio(candRGB, bgRGB)
+		if curRatio > bestRatio {
+			bestRatio = curRatio
+			bestHex = RGBToHex(candRGB)
+		}
+		if curRatio >= minRatio {
+			return RGBToHex(candRGB)
+		}
+	}
+
+	return bestHex
+}

@@ -65,8 +65,12 @@ func MapSwatchesToScheme(name string, variant string, swatches []Swatch) Scheme 
 		colors.SelectionBg = colors.SurfaceHi
 	}
 
-	// 3. Assign Accents from high chroma
-	colors.Accent = byChroma[0].Hex
+	// 3. Assign Accents from high chroma with strict WCAG contrast enforcement
+	bgRGB, _ := HexToRGB(colors.Bg)
+	isDark := variant == "dark"
+
+	// Ensure Accents never merge with Bg and meet WCAG AA contrast (>= 4.5:1)
+	colors.Accent = EnsureContrastHex(byChroma[0].Hex, bgRGB, 4.5, isDark)
 	colors.Cursor = colors.Accent
 
 	// Find distinct second accent (different hue angle)
@@ -82,19 +86,46 @@ func MapSwatchesToScheme(name string, variant string, swatches []Swatch) Scheme 
 			break
 		}
 	}
-	colors.AccentAlt = secondAccent.Hex
+	colors.AccentAlt = EnsureContrastHex(secondAccent.Hex, bgRGB, 4.5, isDark)
+
+	// If AccentAlt accidentally ended up identical to Accent, adjust hue angle
+	if colors.AccentAlt == colors.Accent {
+		lab := RGBToLab(mustRGB(colors.AccentAlt))
+		lab.A = -lab.A
+		lab.B = -lab.B
+		colors.AccentAlt = EnsureContrastHex(RGBToHex(LabToRGB(lab)), bgRGB, 4.5, isDark)
+	}
 
 	// Find warm hue (amber/orange/red ~ 20-70 deg)
 	warnSwatch := findClosestHue(byChroma, 40.0)
-	colors.Warn = warnSwatch.Hex
+	colors.Warn = EnsureContrastHex(warnSwatch.Hex, bgRGB, 4.5, isDark)
 
 	// Find blue hue (~ 230-260 deg)
 	blueSwatch := findClosestHue(byChroma, 240.0)
-	colors.Blue = blueSwatch.Hex
+	colors.Blue = EnsureContrastHex(blueSwatch.Hex, bgRGB, 4.5, isDark)
 
 	// Info accent (cyan/teal ~ 180-210 deg)
 	infoSwatch := findClosestHue(byChroma, 195.0)
-	colors.AccentInfo = infoSwatch.Hex
+	colors.AccentInfo = EnsureContrastHex(infoSwatch.Hex, bgRGB, 4.5, isDark)
+
+	// Guard: Ensure Foreground text meets high contrast against background
+	colors.Fg = EnsureContrastHex(colors.Fg, bgRGB, 7.0, isDark)
+	colors.FgDim = EnsureContrastHex(colors.FgDim, bgRGB, 4.5, isDark)
+	colors.FgMuted = EnsureContrastHex(colors.FgMuted, bgRGB, 3.5, isDark)
+
+	// Guard: Ensure selection_fg contrasts on selection_bg, and selection_bg differs from bg
+	selBgRGB, _ := HexToRGB(colors.SelectionBg)
+	if ContrastRatio(selBgRGB, bgRGB) < 1.3 || colors.SelectionBg == colors.Bg {
+		lab := RGBToLab(selBgRGB)
+		if isDark {
+			lab.L = math.Min(50.0, lab.L+15.0)
+		} else {
+			lab.L = math.Max(50.0, lab.L-15.0)
+		}
+		colors.SelectionBg = RGBToHex(LabToRGB(lab))
+		selBgRGB = LabToRGB(lab)
+	}
+	colors.SelectionFg = EnsureContrastHex(colors.SelectionFg, selBgRGB, 4.5, isDark)
 
 	// 4. ANSI 16 Palette
 	ansi := generateANSI(colors, byChroma, variant)
@@ -137,13 +168,16 @@ func findClosestHue(swatches []Swatch, targetHue float64) Swatch {
 }
 
 func generateANSI(colors Colors, swatches []Swatch, variant string) ANSI {
+	bgRGB, _ := HexToRGB(colors.Bg)
+	isDark := variant == "dark"
+
 	// Standard hue targets: Red(20), Green(130), Yellow(65), Blue(240), Magenta(310), Cyan(190)
-	red := findClosestHue(swatches, 20.0).Hex
-	green := findClosestHue(swatches, 130.0).Hex
-	yellow := findClosestHue(swatches, 65.0).Hex
-	blue := findClosestHue(swatches, 240.0).Hex
-	magenta := findClosestHue(swatches, 310.0).Hex
-	cyan := findClosestHue(swatches, 190.0).Hex
+	red := EnsureContrastHex(findClosestHue(swatches, 20.0).Hex, bgRGB, 4.5, isDark)
+	green := EnsureContrastHex(findClosestHue(swatches, 130.0).Hex, bgRGB, 4.5, isDark)
+	yellow := EnsureContrastHex(findClosestHue(swatches, 65.0).Hex, bgRGB, 4.5, isDark)
+	blue := EnsureContrastHex(findClosestHue(swatches, 240.0).Hex, bgRGB, 4.5, isDark)
+	magenta := EnsureContrastHex(findClosestHue(swatches, 310.0).Hex, bgRGB, 4.5, isDark)
+	cyan := EnsureContrastHex(findClosestHue(swatches, 190.0).Hex, bgRGB, 4.5, isDark)
 
 	var normal [8]string
 	if variant == "dark" {
@@ -172,6 +206,11 @@ func generateANSI(colors Colors, swatches []Swatch, variant string) ANSI {
 	}
 
 	return ansi
+}
+
+func mustRGB(hex string) RGB {
+	c, _ := HexToRGB(hex)
+	return c
 }
 
 func defaultDarkScheme(name string) Scheme {

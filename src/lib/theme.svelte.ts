@@ -1,7 +1,7 @@
 import { extractPalette, serializeToml } from '../worker/client';
 import type { ExtractResult, SchemeColors, SchemeData, Swatch } from '../worker/types';
 import { importThemeFile, type ImportResult } from './importers';
-import { convertThemeVariant } from './adjustments';
+import { convertThemeVariant, autoFixContrast } from './adjustments';
 
 export interface ActiveSlot {
   type: 'base' | 'ansi';
@@ -157,14 +157,15 @@ export class ThemeStore {
       );
 
       this.swatches = [...result.swatches];
+      const validatedColors = autoFixContrast(result.scheme.colors, this.scheme.variant);
       this.scheme = {
         name: this.scheme.name,
         variant: this.scheme.variant,
-        colors: { ...result.scheme.colors },
+        colors: validatedColors,
         ansi: { colors: [...result.scheme.ansi.colors] },
         tools: { ...this.scheme.tools },
       };
-      this.toml = result.toml;
+      this.updateToml();
     } catch (err: any) {
       console.error('Error extracting palette from image:', err);
       this.error = err?.message || 'Failed to process image';
@@ -182,10 +183,11 @@ export class ThemeStore {
       try {
         const result = await extractPalette(this.cachedPixels.slice(), variant, 16);
         this.swatches = [...result.swatches];
+        const validatedColors = autoFixContrast(result.scheme.colors, variant);
         this.scheme = {
           name: this.scheme.name,
           variant: this.scheme.variant,
-          colors: { ...result.scheme.colors },
+          colors: validatedColors,
           ansi: { colors: [...result.scheme.ansi.colors] },
           tools: { ...this.scheme.tools },
         };
@@ -235,14 +237,15 @@ export class ThemeStore {
     try {
       const result = await extractPalette(this.cachedPixels.slice(), this.scheme.variant, 16);
       this.swatches = [...result.swatches];
+      const validatedColors = autoFixContrast(result.scheme.colors, this.scheme.variant);
       this.scheme = {
         name: this.scheme.name,
         variant: this.scheme.variant,
-        colors: { ...result.scheme.colors },
+        colors: validatedColors,
         ansi: { colors: [...result.scheme.ansi.colors] },
         tools: { ...this.scheme.tools },
       };
-      this.toml = result.toml;
+      this.updateToml();
     } catch (err: any) {
       console.error('Error distributing palette:', err);
       this.error = err?.message || 'Failed to distribute palette';

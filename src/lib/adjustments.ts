@@ -172,29 +172,34 @@ export function autoFixContrast(colors: SchemeColors, variant: 'dark' | 'light')
   const res = { ...colors };
   const minTextRatio = 4.5; // WCAG AA for normal text
   const minSelectionRatio = 3.5;
+  const isDark = variant === 'dark';
 
   const bg = res.bg;
 
   // Fix foreground text colors against background
-  const textKeys: (keyof SchemeColors)[] = ['fg', 'fg_dim', 'accent', 'accent_alt', 'accent_info', 'warn', 'blue'];
+  const textKeys: (keyof SchemeColors)[] = [
+    'fg', 'fg_dim', 'fg_muted', 'accent', 'accent_alt', 'accent_info', 'warn', 'blue', 'cursor'
+  ];
+
   for (const k of textKeys) {
     let currentHex = res[k];
     let ratio = calculateContrastRatio(currentHex, bg);
 
-    if (ratio < minTextRatio) {
+    if (ratio < minTextRatio || currentHex.toLowerCase() === bg.toLowerCase()) {
       // Adjust lightness in HSL until ratio >= 4.5 or max attempts reached
       const rgb = hexToRgb(currentHex);
       let { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      s = Math.max(s, 35); // Ensure saturation doesn't wash out completely
 
-      for (let step = 0; step < 25; step++) {
-        if (variant === 'dark') {
-          l = Math.min(96, l + 3);
+      for (let step = 0; step < 30; step++) {
+        if (isDark) {
+          l = Math.min(96, l + 2.5);
         } else {
-          l = Math.max(8, l - 3);
+          l = Math.max(8, l - 2.5);
         }
         const candidate = rgbToHex(hslToRgb(h, s, l).r, hslToRgb(h, s, l).g, hslToRgb(h, s, l).b);
         ratio = calculateContrastRatio(candidate, bg);
-        if (ratio >= minTextRatio) {
+        if (ratio >= minTextRatio && candidate.toLowerCase() !== bg.toLowerCase()) {
           res[k] = candidate;
           break;
         }
@@ -202,20 +207,28 @@ export function autoFixContrast(colors: SchemeColors, variant: 'dark' | 'light')
     }
   }
 
+  // Prevent distinct accents from collapsing into the exact same color
+  if (res.accent_info.toLowerCase() === res.accent.toLowerCase()) {
+    const rgb = hexToRgb(res.accent_info);
+    let { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    h = (h + 60) % 360;
+    res.accent_info = rgbToHex(hslToRgb(h, s, l).r, hslToRgb(h, s, l).g, hslToRgb(h, s, l).b);
+  }
+
   // Fix selection background vs text collision:
   // Ensure selection_bg has visible distinction from bg, and selection_fg has high contrast on selection_bg
   let selBgRatio = calculateContrastRatio(res.selection_bg, bg);
-  if (selBgRatio < 1.3) {
+  if (selBgRatio < 1.3 || res.selection_bg.toLowerCase() === bg.toLowerCase()) {
     // Push selection_bg slightly lighter in dark mode, darker in light mode
     const rgb = hexToRgb(res.selection_bg);
     let { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
-    l = variant === 'dark' ? Math.min(50, l + 15) : Math.max(50, l - 15);
+    l = isDark ? Math.min(50, l + 16) : Math.max(50, l - 16);
     res.selection_bg = rgbToHex(hslToRgb(h, s, l).r, hslToRgb(h, s, l).g, hslToRgb(h, s, l).b);
   }
 
   let selFgRatio = calculateContrastRatio(res.selection_fg, res.selection_bg);
-  if (selFgRatio < minSelectionRatio) {
-    res.selection_fg = variant === 'dark' ? '#f0f6fc' : '#0d1117';
+  if (selFgRatio < minSelectionRatio || res.selection_fg.toLowerCase() === res.selection_bg.toLowerCase()) {
+    res.selection_fg = isDark ? '#f0f6fc' : '#0d1117';
   }
 
   return res;
