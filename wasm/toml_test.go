@@ -29,4 +29,12 @@ func TestSerializeTOML(t *testing.T) {
 			t.Errorf("SerializeTOML output missing expected string %q\nFull output:\n%s", s, output)
 		}
 	}
+
+	// Test default fallback when Tools is nil
+	emptyScheme := defaultDarkScheme("Default Test")
+	emptyScheme.Tools = nil
+	emptyOut := SerializeTOML(emptyScheme)
+	if !strings.Contains(emptyOut, "[tools]") || !strings.Contains(emptyOut, `bat = "base16"`) {
+		t.Errorf("SerializeTOML failed to generate default tools.bat fallback:\n%s", emptyOut)
+	}
 }

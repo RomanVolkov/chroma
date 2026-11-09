@@ -51,9 +51,17 @@ function runTests() {
   // 1. Test Dotfiles TOML export & import
   const dotfilesExp = EXPORTERS.find(e => e.id === 'dotfiles-toml')!;
   const dotfilesContent = dotfilesExp.generate(sampleScheme);
+  assert(dotfilesContent.includes('[tools]'), 'Dotfiles export includes [tools] table');
+  assert(dotfilesContent.includes('bat = "base16"'), 'Dotfiles export includes tools.bat = "base16"');
+
   const r1 = importThemeFile(dotfilesContent, 'cyberpunk.toml');
   assert(r1.success && r1.confidence >= 90, `Dotfiles TOML imported with confidence ${r1.confidence}% >= 90%`);
   assert(r1.scheme?.colors.bg === '#0d0e15', `Dotfiles TOML colors bg matched: ${r1.scheme?.colors.bg}`);
+  assert(r1.scheme?.tools?.bat === 'base16', 'Imported scheme contains tools.bat = "base16"');
+
+  const customToml = dotfilesContent.replace('bat = "base16"', 'bat = "TwoDark"');
+  const rCustom = importThemeFile(customToml, 'custom.toml');
+  assert(rCustom.scheme?.tools?.bat === 'TwoDark', 'Custom tools.bat = "TwoDark" preserved on import');
 
   // 2. Test Kitty export & import
   const kittyExp = EXPORTERS.find(e => e.id === 'kitty')!;

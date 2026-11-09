@@ -51,11 +51,19 @@ func SerializeTOML(s Scheme) string {
 	}
 	b.WriteString(",\n]\n")
 
-	// [tools] section if present
-	if len(s.Tools) > 0 {
-		b.WriteString("\n[tools]\n")
+	// [tools] section: always ensure tools.bat is present for gitconfig and shell templates
+	batTheme := "base16"
+	if s.Tools != nil && s.Tools["bat"] != "" {
+		batTheme = s.Tools["bat"]
+	}
+
+	b.WriteString("\n[tools]\n")
+	b.WriteString(fmt.Sprintf("bat = %q\n", batTheme))
+	if s.Tools != nil {
 		for k, v := range s.Tools {
-			b.WriteString(fmt.Sprintf("%s = %q\n", k, v))
+			if k != "bat" {
+				b.WriteString(fmt.Sprintf("%s = %q\n", k, v))
+			}
 		}
 	}
 

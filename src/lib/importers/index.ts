@@ -28,7 +28,8 @@ function normalizeScheme(
   name: string,
   variant: 'dark' | 'light',
   colors: Partial<SchemeColors>,
-  ansiColors: (string | null | undefined)[]
+  ansiColors: (string | null | undefined)[],
+  tools?: Record<string, string>
 ): SchemeData {
   const bg = colors.bg || '#14171d';
   const fg = colors.fg || '#e6edf3';
@@ -66,6 +67,10 @@ function normalizeScheme(
     },
     ansi: {
       colors: fullAnsi,
+    },
+    tools: {
+      bat: tools?.bat || 'base16',
+      ...(tools || {}),
     },
   };
 }
@@ -113,11 +118,23 @@ function parseDotfilesToml(content: string, filename: string): ImportResult | nu
     }
   }
 
+  const tools: Record<string, string> = { bat: 'base16' };
+  const toolsMatch = content.match(/\[tools\]([\s\S]*?)(?=\n\[|$)/);
+  if (toolsMatch) {
+    const lines = toolsMatch[1].split('\n');
+    for (const line of lines) {
+      const kv = line.split('#')[0].match(/^\s*([a-zA-Z0-9_-]+)\s*=\s*["']([^"']+)["']/);
+      if (kv) {
+        tools[kv[1]] = kv[2];
+      }
+    }
+  }
+
   return {
     success: true,
     confidence: Math.min(100, confidence),
     formatName: 'Dotfiles TOML',
-    scheme: normalizeScheme(name, variant, colors, ansi),
+    scheme: normalizeScheme(name, variant, colors, ansi, tools),
   };
 }
 
