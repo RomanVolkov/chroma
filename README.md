@@ -33,7 +33,7 @@ The main goal of Chroma is to create color schemes from images or from existing 
 
 ## Key Features
 
-- **Live Preview**: Syntax-highlighted code editor preview across 8 languages (TypeScript, Go, Rust, C, C++, Bash, Python, and Lua).
+- **Live Preview**: Syntax-highlighted code editor preview across 9 languages (TypeScript, Go, Rust, C, C++, Bash, Python, Lua, and Markdown).
 - **Contrast Check & Auto-Fix**: Checks readability against background with a one-click button to fix low-contrast text.
 - **Adjustments**: Sliders to tweak brightness, contrast, saturation, warmth, and hue.
 - **50 Exporters**: Export into Neovim, VS Code, Kitty, Alacritty, Ghostty, WezTerm, Helix, Zed, Tmux, Starship, and 40 more tools (or download all in a ZIP).

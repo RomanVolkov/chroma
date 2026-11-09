@@ -1172,5 +1172,122 @@ export const SNIPPETS: LanguageSnippet[] = [
         { type: 'variable', text: 'M' }
       ], hasCursor: true }
     ]
+  },
+  // 9. Markdown
+  {
+    id: 'markdown',
+    name: 'Markdown',
+    filename: 'DOCUMENT.md',
+    lines: [
+      { tokens: [
+        { type: 'operator', text: '# ' },
+        { type: 'tag', text: 'Chroma Theme Studio' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'punctuation', text: '> ' },
+        { type: 'comment', text: 'Single-image color palette generator with zero server dependencies.' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'operator', text: '## ' },
+        { type: 'type', text: 'Core Architecture' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'operator', text: '- ' },
+        { type: 'punctuation', text: '**' },
+        { type: 'keyword', text: 'Engine' },
+        { type: 'punctuation', text: '**' },
+        { type: 'text', text: ': Pure ' },
+        { type: 'type', text: 'Go' },
+        { type: 'text', text: ' compiled to ' },
+        { type: 'string', text: '`WebAssembly`' },
+        { type: 'text', text: ' running in worker thread.' }
+      ]},
+      { tokens: [
+        { type: 'operator', text: '- ' },
+        { type: 'punctuation', text: '**' },
+        { type: 'keyword', text: 'Contrast' },
+        { type: 'punctuation', text: '**' },
+        { type: 'text', text: ': Automated ' },
+        { type: 'warn', text: 'WCAG 2.0 AA' },
+        { type: 'text', text: ' threshold enforcement.' }
+      ]},
+      { tokens: [
+        { type: 'operator', text: '- ' },
+        { type: 'punctuation', text: '**' },
+        { type: 'keyword', text: 'Export' },
+        { type: 'punctuation', text: '**' },
+        { type: 'text', text: ': Native bundles for ' },
+        { type: 'number', text: '50' },
+        { type: 'text', text: '+ developer tools.' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'operator', text: '### ' },
+        { type: 'type', text: 'Installation & Preview' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'punctuation', text: '```' },
+        { type: 'keyword', text: 'bash' }
+      ]},
+      { tokens: [
+        { type: 'comment', text: '# Clone and launch the local studio' }
+      ]},
+      { tokens: [
+        { type: 'variable', text: 'git' },
+        { type: 'text', text: ' clone ' },
+        { type: 'string', text: 'https://github.com/RomanVolkov/chroma.git' }
+      ]},
+      { tokens: [
+        { type: 'variable', text: 'cd' },
+        { type: 'text', text: ' chroma && ' },
+        { type: 'variable', text: 'npm' },
+        { type: 'text', text: ' run dev' }
+      ], isSelected: true },
+      { tokens: [
+        { type: 'punctuation', text: '```' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'operator', text: '### ' },
+        { type: 'type', text: 'Keyboard Shortcuts' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'punctuation', text: '| ' },
+        { type: 'property', text: 'Key' },
+        { type: 'punctuation', text: ' | ' },
+        { type: 'property', text: 'Action' },
+        { type: 'punctuation', text: ' |' }
+      ]},
+      { tokens: [
+        { type: 'punctuation', text: '| :--- | :--- |' }
+      ]},
+      { tokens: [
+        { type: 'punctuation', text: '| ' },
+        { type: 'string', text: '`Esc`' },
+        { type: 'punctuation', text: ' | ' },
+        { type: 'text', text: 'Drop active token color selection |' }
+      ]},
+      { tokens: [
+        { type: 'punctuation', text: '| ' },
+        { type: 'string', text: '`Click`' },
+        { type: 'punctuation', text: ' | ' },
+        { type: 'text', text: 'Inspect and tune word color in editor |' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'punctuation', text: 'Explore live documentation at ' },
+        { type: 'punctuation', text: '[' },
+        { type: 'blue', text: 'Chroma Studio' },
+        { type: 'punctuation', text: '](' },
+        { type: 'string', text: 'https://romanvolkov.github.io/chroma/' },
+        { type: 'punctuation', text: ')' },
+        { type: 'punctuation', text: '.' }
+      ], hasCursor: true }
+    ]
   }
 ];
