@@ -24,6 +24,85 @@
     theme.updateToml();
   }
 
+  interface TokenMapping {
+    type: 'base' | 'ansi';
+    key: keyof SchemeColors | number;
+    label: string;
+    roleName: string;
+  }
+
+  function getTokenMapping(token: SyntaxToken, isSelected: boolean): TokenMapping {
+    if (isSelected) {
+      if (token.type === 'comment') {
+        return { type: 'base', key: 'fg_muted', label: 'fg_muted', roleName: 'Comment' };
+      }
+      return { type: 'base', key: 'selection_fg', label: 'selection_fg', roleName: 'Selection Text' };
+    }
+
+    switch (token.type) {
+      case 'comment':
+        return { type: 'base', key: 'fg_muted', label: 'fg_muted', roleName: 'Comment' };
+      case 'keyword':
+        return { type: 'base', key: 'accent_alt', label: 'accent_alt', roleName: 'Keyword' };
+      case 'function':
+        return { type: 'base', key: 'accent', label: 'accent', roleName: 'Function' };
+      case 'type':
+        return { type: 'base', key: 'accent_info', label: 'accent_info', roleName: 'Type' };
+      case 'string':
+        return { type: 'ansi', key: 2, label: 'ANSI green', roleName: 'String' };
+      case 'number':
+      case 'boolean':
+        return { type: 'base', key: 'warn', label: 'warn', roleName: 'Number/Boolean' };
+      case 'property':
+        return { type: 'base', key: 'blue', label: 'blue', roleName: 'Property' };
+      case 'variable':
+        return { type: 'base', key: 'fg', label: 'fg', roleName: 'Variable' };
+      case 'operator':
+        return { type: 'base', key: 'accent_alt', label: 'accent_alt', roleName: 'Operator' };
+      case 'tag':
+        return { type: 'base', key: 'accent', label: 'accent', roleName: 'Tag' };
+      case 'punctuation':
+        return { type: 'base', key: 'fg_dim', label: 'fg_dim', roleName: 'Punctuation' };
+      default:
+        return { type: 'base', key: 'fg', label: 'fg', roleName: 'Text' };
+    }
+  }
+
+  function isTokenActive(token: SyntaxToken, isSelected: boolean): boolean {
+    if (!theme.activeSlot) return false;
+    const mapping = getTokenMapping(token, isSelected);
+    return theme.activeSlot.type === mapping.type && theme.activeSlot.key === mapping.key;
+  }
+
+  function handleTokenClick(e: MouseEvent, token: SyntaxToken, isSelected: boolean) {
+    e.stopPropagation();
+    const mapping = getTokenMapping(token, isSelected);
+    theme.setActiveSlot({
+      type: mapping.type,
+      key: mapping.key,
+      label: mapping.label,
+    });
+  }
+
+  function handleLineClick(e: MouseEvent, line: CodeLine) {
+    if (line.isSelected) {
+      e.stopPropagation();
+      theme.setActiveSlot({
+        type: 'base',
+        key: 'selection_bg',
+        label: 'selection_bg',
+      });
+    }
+  }
+
+  function handleBackgroundClick() {
+    theme.setActiveSlot({
+      type: 'base',
+      key: 'bg',
+      label: 'bg',
+    });
+  }
+
   function getTokenStyle(token: SyntaxToken, isSelected: boolean): string {
     if (isSelected) {
       if (token.type === 'comment') return `color: ${theme.scheme.colors.fg_muted}; font-style: italic;`;
@@ -86,16 +165,32 @@
       {/each}
     </div>
 
-    <!-- Active Variant Tag -->
-    <div class="flex items-center gap-2 shrink-0">
-      <span class="text-[10px] uppercase font-mono tracking-wider font-semibold" style="color: {theme.scheme.colors.fg_muted};">
+    <!-- Active Variant Tag & Active Slot Pill -->
+    <div class="flex items-center gap-2.5 shrink-0">
+      {#if theme.activeSlot}
+        {@const activeColor = theme.activeSlot.type === 'base' ? (theme.scheme.colors as any)[theme.activeSlot.key] : theme.scheme.ansi.colors[theme.activeSlot.key as number]}
+        <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#14171d]/90 border border-indigo-500/40 text-[11px] font-medium text-neutral-200 shadow-xs">
+          <span class="text-neutral-400 text-[10px]">Slot:</span>
+          <span class="text-indigo-300 font-semibold">{theme.activeSlot.label}</span>
+          <span class="w-2.5 h-2.5 rounded-full border border-white/20 inline-block shrink-0 shadow-xs" style="background-color: {activeColor};"></span>
+          <span class="text-[10px] font-mono text-neutral-400">{activeColor}</span>
+        </div>
+      {/if}
+
+      <span class="text-[10px] uppercase font-mono tracking-wider font-semibold opacity-60" style="color: {theme.scheme.colors.fg_muted};">
         {theme.scheme.variant}
       </span>
     </div>
   </div>
 
   <!-- Big Code Canvas with Line Numbers & Syntax Highlights -->
-  <div class="flex-1 p-4 leading-relaxed flex overflow-auto">
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    onclick={handleBackgroundClick}
+    class="flex-1 p-4 leading-relaxed flex overflow-auto cursor-default"
+    title="Click empty canvas to select background color"
+  >
     <!-- Line numbers gutter -->
     <div
       class="select-none pr-4 mr-4 border-r text-right space-y-0.5 shrink-0 opacity-40 font-mono text-[11.5px]"
@@ -109,18 +204,39 @@
     <!-- Code lines -->
     <div class="flex-1 space-y-0.5 whitespace-pre min-w-0">
       {#each activeSnippet.lines as line}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
-          class="flex items-center min-h-[1.5em] px-1 rounded-xs transition-colors {line.isSelected ? 'shadow-xs' : ''}"
+          onclick={(e) => handleLineClick(e, line)}
+          class="flex items-center min-h-[1.5em] px-1 rounded-xs transition-colors {line.isSelected ? 'shadow-xs cursor-pointer' : ''}"
           style="{line.isSelected ? `background-color: ${theme.scheme.colors.selection_bg};` : ''}"
+          title={line.isSelected ? 'Click to edit selection_bg' : undefined}
         >
           {#each line.tokens as token}
-            <span style="{getTokenStyle(token, !!line.isSelected)}">{token.text}</span>
+            {@const mapping = getTokenMapping(token, !!line.isSelected)}
+            {@const active = isTokenActive(token, !!line.isSelected)}
+            {@const colorVal = mapping.type === 'base' ? (theme.scheme.colors as any)[mapping.key] : theme.scheme.ansi.colors[mapping.key as number]}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <span
+              onclick={(e) => handleTokenClick(e, token, !!line.isSelected)}
+              class="cursor-pointer transition-all px-0.5 -mx-0.5 rounded-xs hover:ring-1 hover:ring-indigo-400 hover:bg-white/10 {active ? 'ring-2 ring-indigo-400 bg-indigo-500/25 font-bold shadow-xs' : ''}"
+              style="{getTokenStyle(token, !!line.isSelected)}"
+              title="Click to edit {mapping.roleName} ({mapping.label}: {colorVal})"
+            >{token.text}</span>
           {/each}
 
           {#if line.hasCursor}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
             <span
-              class="inline-block w-2 h-4 align-middle ml-0.5 animate-pulse rounded-xs"
+              onclick={(e) => {
+                e.stopPropagation();
+                theme.setActiveSlot({ type: 'base', key: 'cursor', label: 'cursor' });
+              }}
+              class="inline-block w-2 h-4 align-middle ml-0.5 animate-pulse rounded-xs cursor-pointer hover:ring-2 hover:ring-indigo-400"
               style="background-color: {theme.scheme.colors.cursor};"
+              title="Click to edit cursor ({theme.scheme.colors.cursor})"
             ></span>
           {/if}
         </div>

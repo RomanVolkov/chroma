@@ -55,6 +55,18 @@
     theme.scheme.ansi.colors[index] = hex;
     theme.updateToml();
   }
+
+  $effect(() => {
+    if (theme.activeSlot) {
+      const id = theme.activeSlot.type === 'base'
+        ? `slot-${theme.activeSlot.key}`
+        : `slot-ansi-${theme.activeSlot.key}`;
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  });
 </script>
 
 <div class="flex flex-col gap-5 p-4 overflow-y-auto max-h-full">
@@ -83,6 +95,7 @@
     <div class="grid grid-cols-2 gap-1.5">
       {#each accentSlots as slot}
         <ColorSlot
+          id="slot-{slot.key}"
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
           isActive={theme.activeSlot.type === 'base' && theme.activeSlot.key === slot.key}
@@ -99,6 +112,7 @@
     <div class="grid grid-cols-2 gap-1.5">
       {#each baseSlots as slot}
         <ColorSlot
+          id="slot-{slot.key}"
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
           isActive={theme.activeSlot.type === 'base' && theme.activeSlot.key === slot.key}
@@ -115,6 +129,7 @@
     <div class="grid grid-cols-2 gap-1.5">
       {#each textSlots as slot}
         <ColorSlot
+          id="slot-{slot.key}"
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
           isActive={theme.activeSlot.type === 'base' && theme.activeSlot.key === slot.key}
@@ -131,6 +146,7 @@
     <div class="grid grid-cols-8 gap-1.5 p-2 rounded-lg bg-[#14171d] border border-[#262b35]">
       {#each theme.scheme.ansi.colors as color, idx}
         <button
+          id="slot-ansi-{idx}"
           onclick={() => selectAnsi(idx)}
           class="aspect-square rounded flex flex-col items-center justify-center relative border transition-all cursor-pointer {theme.activeSlot.type === 'ansi' && theme.activeSlot.key === idx ? 'ring-2 ring-indigo-500 border-white scale-105 z-10' : 'border-white/10 hover:border-white/40'}"
           style="background-color: {color};"

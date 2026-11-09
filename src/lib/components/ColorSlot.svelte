@@ -1,11 +1,13 @@
 <script lang="ts">
   let {
+    id,
     label,
     color,
     isActive = false,
     onselect,
     onchange,
   }: {
+    id?: string;
     label: string;
     color: string;
     isActive?: boolean;
@@ -35,11 +37,12 @@
 </script>
 
 <div
+  {id}
   role="button"
   tabindex="0"
   onclick={onselect}
   onkeydown={(e) => e.key === 'Enter' && onselect()}
-  class="flex items-center justify-between p-1.5 px-2 rounded-lg border transition-all cursor-pointer group select-none {isActive ? 'bg-[#1e232d] border-indigo-500 shadow-sm ring-1 ring-indigo-500/50' : 'bg-[#14171d]/80 border-[#262b35] hover:bg-[#1a1e26] hover:border-neutral-700'}"
+  class="flex items-center justify-between p-1.5 px-2 rounded-lg border transition-all cursor-pointer group select-none {isActive ? 'bg-[#1e232d] border-indigo-400 shadow-md ring-2 ring-indigo-500/70 scale-[1.02]' : 'bg-[#14171d]/80 border-[#262b35] hover:bg-[#1a1e26] hover:border-neutral-700'}"
 >
   <div class="flex items-center gap-2 min-w-0">
     <!-- Swatch with hidden color input for custom tweak -->
