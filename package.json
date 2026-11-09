@@ -1,0 +1,28 @@
+{
+  "name": "chroma",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Single-image theme studio with Go WebAssembly engine",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build:wasm": "GOOS=js GOARCH=wasm go build -ldflags=\"-s -w\" -o public/engine.wasm ./wasm",
+    "build": "npm run build:wasm && vite build",
+    "preview": "vite preview",
+    "test:go": "go test ./wasm/...",
+    "test": "npm run test:go"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tailwindcss/vite": "^4.0.9",
+    "@types/jszip": "^3.4.0",
+    "lucide-svelte": "^0.475.0",
+    "svelte": "^5.20.2",
+    "tailwindcss": "^4.0.9",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0"
+  },
+  "dependencies": {
+    "jszip": "^3.10.2"
+  }
+}
