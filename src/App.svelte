@@ -83,7 +83,13 @@
 
       <!-- Scrollable Color Slot Editor (Bottom Half) -->
       <div class="flex-1 overflow-y-auto bg-[#0d0f12]">
-        <SlotEditor />
+        <SlotEditor onOpenAdjustments={() => {
+          showAdjustmentsDrawer = !showAdjustmentsDrawer;
+          if (showAdjustmentsDrawer) {
+            showExportModal = false;
+            showTomlDrawer = false;
+          }
+        }} />
       </div>
     </aside>
 

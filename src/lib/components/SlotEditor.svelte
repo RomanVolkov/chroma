@@ -2,6 +2,9 @@
   import { theme } from '../theme.svelte';
   import ColorSlot from './ColorSlot.svelte';
   import type { SchemeColors } from '../../worker/types';
+  import { Sliders } from 'lucide-svelte';
+
+  let { onOpenAdjustments }: { onOpenAdjustments?: () => void } = $props();
 
   const baseSlots: { key: keyof SchemeColors; label: string }[] = [
     { key: 'bg', label: 'bg' },
@@ -55,6 +58,25 @@
 </script>
 
 <div class="flex flex-col gap-5 p-4 overflow-y-auto max-h-full">
+  <!-- Top Bar: Header + Adjust Button close to colors -->
+  <div class="flex items-center justify-between pb-2 border-b border-[#1c2027]">
+    <div class="flex items-center gap-1.5">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-neutral-300">Theme Colors</span>
+      <span class="text-[10px] text-neutral-500 font-mono">({theme.scheme.variant})</span>
+    </div>
+
+    {#if onOpenAdjustments}
+      <button
+        onclick={onOpenAdjustments}
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1a1e26] hover:bg-[#202631] border border-[#262b35] hover:border-indigo-500/40 text-neutral-300 hover:text-indigo-300 text-[11px] font-medium transition-all cursor-pointer shadow-xs"
+        title="Adjust brightness, contrast, saturation, warmth, and hue"
+      >
+        <Sliders class="w-3.5 h-3.5 text-indigo-400" />
+        <span>Adjust</span>
+      </button>
+    {/if}
+  </div>
+
   <!-- Accents Section -->
   <div>
     <h3 class="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">Accent & Signals</h3>
