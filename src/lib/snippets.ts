@@ -146,9 +146,7 @@ export const SNIPPETS: LanguageSnippet[] = [
         { type: 'string', text: "'Buffer cannot be empty'" },
         { type: 'text', text: ');' }
       ]},
-      { tokens: [
-        { type: 'text', text: '  }' }
-      ]},
+      { tokens: [{ type: 'text', text: '  }' }] },
       { tokens: [] },
       { tokens: [
         { type: 'text', text: '  ' },
@@ -500,7 +498,428 @@ export const SNIPPETS: LanguageSnippet[] = [
     ]
   },
 
-  // 4. Python
+  // 4. C
+  {
+    id: 'c',
+    name: 'C',
+    filename: 'engine.c',
+    lines: [
+      { tokens: [{ type: 'comment', text: '/* Chroma CIELAB delta-e color math in C */' }] },
+      { tokens: [
+        { type: 'keyword', text: '#include' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '<stdio.h>' }
+      ]},
+      { tokens: [
+        { type: 'keyword', text: '#include' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '<stdlib.h>' }
+      ]},
+      { tokens: [
+        { type: 'keyword', text: '#include' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '<math.h>' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'keyword', text: '#define' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'MAX_CLUSTERS' },
+        { type: 'text', text: ' ' },
+        { type: 'number', text: '16' }
+      ]},
+      { tokens: [
+        { type: 'keyword', text: '#define' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'MIN_CONTRAST' },
+        { type: 'text', text: ' ' },
+        { type: 'number', text: '4.5' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'keyword', text: 'typedef struct' },
+        { type: 'text', text: ' {' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'double' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'L' },
+        { type: 'punctuation', text: ', ' },
+        { type: 'property', text: 'a' },
+        { type: 'punctuation', text: ', ' },
+        { type: 'property', text: 'b' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'double' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'weight' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '} ' },
+        { type: 'type', text: 'LabColor' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [] },
+      { tokens: [{ type: 'comment', text: '/* Calculate Euclidean distance in Lab color space */' }] },
+      { tokens: [
+        { type: 'type', text: 'double' },
+        { type: 'text', text: ' ' },
+        { type: 'function', text: 'delta_e76' },
+        { type: 'text', text: '(' },
+        { type: 'keyword', text: 'const' },
+        { type: 'text', text: ' ' },
+        { type: 'type', text: 'LabColor' },
+        { type: 'operator', text: '*' },
+        { type: 'variable', text: 'c1' },
+        { type: 'punctuation', text: ', ' },
+        { type: 'keyword', text: 'const' },
+        { type: 'text', text: ' ' },
+        { type: 'type', text: 'LabColor' },
+        { type: 'operator', text: '*' },
+        { type: 'variable', text: 'c2' },
+        { type: 'text', text: ') {' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'double' },
+        { type: 'text', text: ' ' },
+        { type: 'variable', text: 'dl' },
+        { type: 'operator', text: ' = ' },
+        { type: 'variable', text: 'c1' },
+        { type: 'operator', text: '->' },
+        { type: 'property', text: 'L' },
+        { type: 'operator', text: ' - ' },
+        { type: 'variable', text: 'c2' },
+        { type: 'operator', text: '->' },
+        { type: 'property', text: 'L' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'double' },
+        { type: 'text', text: ' ' },
+        { type: 'variable', text: 'da' },
+        { type: 'operator', text: ' = ' },
+        { type: 'variable', text: 'c1' },
+        { type: 'operator', text: '->' },
+        { type: 'property', text: 'a' },
+        { type: 'operator', text: ' - ' },
+        { type: 'variable', text: 'c2' },
+        { type: 'operator', text: '->' },
+        { type: 'property', text: 'a' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'double' },
+        { type: 'text', text: ' ' },
+        { type: 'variable', text: 'db' },
+        { type: 'operator', text: ' = ' },
+        { type: 'variable', text: 'c1' },
+        { type: 'operator', text: '->' },
+        { type: 'property', text: 'b' },
+        { type: 'operator', text: ' - ' },
+        { type: 'variable', text: 'c2' },
+        { type: 'operator', text: '->' },
+        { type: 'property', text: 'b' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'keyword', text: 'return' },
+        { type: 'text', text: ' ' },
+        { type: 'function', text: 'sqrt' },
+        { type: 'text', text: '(dl * dl + da * da + db * db);' }
+      ], isSelected: true },
+      { tokens: [{ type: 'text', text: '}' }] },
+      { tokens: [] },
+      { tokens: [
+        { type: 'type', text: 'int' },
+        { type: 'text', text: ' ' },
+        { type: 'function', text: 'main' },
+        { type: 'text', text: '(' },
+        { type: 'type', text: 'void' },
+        { type: 'text', text: ') {' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'function', text: 'printf' },
+        { type: 'text', text: '(' },
+        { type: 'string', text: '"Chroma Engine Initialized\\n"' },
+        { type: 'text', text: ');' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'keyword', text: 'return' },
+        { type: 'text', text: ' ' },
+        { type: 'number', text: '0' },
+        { type: 'punctuation', text: ';' }
+      ], hasCursor: true },
+      { tokens: [{ type: 'text', text: '}' }] }
+    ]
+  },
+
+  // 5. C++
+  {
+    id: 'cpp',
+    name: 'C++',
+    filename: 'quantize.cpp',
+    lines: [
+      { tokens: [{ type: 'comment', text: '// Chroma Color Clustering Module in Modern C++20' }] },
+      { tokens: [
+        { type: 'keyword', text: '#include' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '<vector>' }
+      ]},
+      { tokens: [
+        { type: 'keyword', text: '#include' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '<memory>' }
+      ]},
+      { tokens: [
+        { type: 'keyword', text: '#include' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '<cmath>' }
+      ]},
+      { tokens: [
+        { type: 'keyword', text: '#include' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '<string>' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'keyword', text: 'namespace' },
+        { type: 'text', text: ' ' },
+        { type: 'variable', text: 'chroma' },
+        { type: 'text', text: ' {' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'keyword', text: 'struct' },
+        { type: 'text', text: ' ' },
+        { type: 'type', text: 'ThemeScheme' },
+        { type: 'text', text: ' {' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'std::string' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'name' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'std::vector' },
+        { type: 'text', text: '<' },
+        { type: 'type', text: 'std::string' },
+        { type: 'text', text: '> ' },
+        { type: 'property', text: 'palette' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'double' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'contrast_ratio' },
+        { type: 'operator', text: '{' },
+        { type: 'number', text: '4.5' },
+        { type: 'operator', text: '};' }
+      ]},
+      { tokens: [{ type: 'text', text: '};' }] },
+      { tokens: [] },
+      { tokens: [
+        { type: 'keyword', text: 'class' },
+        { type: 'text', text: ' ' },
+        { type: 'type', text: 'Quantizer' },
+        { type: 'text', text: ' {' }
+      ]},
+      { tokens: [{ type: 'keyword', text: 'public:' }] },
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'keyword', text: 'explicit' },
+        { type: 'text', text: ' ' },
+        { type: 'function', text: 'Quantizer' },
+        { type: 'text', text: '(' },
+        { type: 'type', text: 'size_t' },
+        { type: 'text', text: ' ' },
+        { type: 'variable', text: 'max_k' },
+        { type: 'operator', text: ' = ' },
+        { type: 'number', text: '16' },
+        { type: 'text', text: ')' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '        : ' },
+        { type: 'property', text: 'k_' },
+        { type: 'text', text: '(' },
+        { type: 'variable', text: 'max_k' },
+        { type: 'text', text: ') {}' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'keyword', text: 'auto' },
+        { type: 'text', text: ' ' },
+        { type: 'function', text: 'cluster' },
+        { type: 'text', text: '(' },
+        { type: 'keyword', text: 'const' },
+        { type: 'text', text: ' ' },
+        { type: 'type', text: 'std::vector' },
+        { type: 'text', text: '<' },
+        { type: 'type', text: 'uint8_t' },
+        { type: 'text', text: '>& ' },
+        { type: 'variable', text: 'pixels' },
+        { type: 'text', text: ') -> ' },
+        { type: 'type', text: 'ThemeScheme' },
+        { type: 'text', text: ' {' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '        ' },
+        { type: 'type', text: 'ThemeScheme' },
+        { type: 'text', text: ' ' },
+        { type: 'variable', text: 'scheme' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '        ' },
+        { type: 'variable', text: 'scheme' },
+        { type: 'property', text: '.name' },
+        { type: 'operator', text: ' = ' },
+        { type: 'string', text: '"Chroma Theme"' },
+        { type: 'punctuation', text: ';' }
+      ], isSelected: true },
+      { tokens: [
+        { type: 'text', text: '        ' },
+        { type: 'keyword', text: 'return' },
+        { type: 'text', text: ' ' },
+        { type: 'variable', text: 'scheme' },
+        { type: 'punctuation', text: ';' }
+      ], hasCursor: true },
+      { tokens: [{ type: 'text', text: '    }' }] },
+      { tokens: [{ type: 'keyword', text: 'private:' }] },
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'type', text: 'size_t' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'k_' },
+        { type: 'punctuation', text: ';' }
+      ]},
+      { tokens: [{ type: 'text', text: '};' }] },
+      { tokens: [] },
+      { tokens: [{ type: 'text', text: '} // namespace chroma' }] }
+    ]
+  },
+
+  // 6. Bash
+  {
+    id: 'bash',
+    name: 'Bash',
+    filename: 'deploy.sh',
+    lines: [
+      { tokens: [{ type: 'comment', text: '#!/usr/bin/env bash' }] },
+      { tokens: [{ type: 'comment', text: '# Deploy Chroma Color Scheme to System Dotfiles' }] },
+      { tokens: [] },
+      { tokens: [
+        { type: 'keyword', text: 'set' },
+        { type: 'text', text: ' -euo pipefail' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'keyword', text: 'readonly' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'DOTFILES_DIR' },
+        { type: 'operator', text: '="${' },
+        { type: 'variable', text: 'DOTFILES' },
+        { type: 'operator', text: ':-' },
+        { type: 'string', text: '"$HOME/.dotfiles"' },
+        { type: 'operator', text: '}"' }
+      ]},
+      { tokens: [
+        { type: 'keyword', text: 'readonly' },
+        { type: 'text', text: ' ' },
+        { type: 'property', text: 'THEME_NAME' },
+        { type: 'operator', text: '="${' },
+        { type: 'number', text: '1' },
+        { type: 'operator', text: ':-' },
+        { type: 'string', text: '"chroma-theme"' },
+        { type: 'operator', text: '}"' }
+      ]},
+      { tokens: [] },
+      { tokens: [
+        { type: 'function', text: 'log_info' },
+        { type: 'text', text: '() {' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'keyword', text: 'printf' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '"\\033[38;2;88;166;255m[INFO]\\033[0m %s\\n"' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '"$*"' }
+      ]},
+      { tokens: [{ type: 'text', text: '}' }] },
+      { tokens: [] },
+      { tokens: [
+        { type: 'keyword', text: 'if' },
+        { type: 'text', text: ' [[ ! -d ' },
+        { type: 'string', text: '"$DOTFILES_DIR/theme"' },
+        { type: 'text', text: ' ]]; ' },
+        { type: 'keyword', text: 'then' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'keyword', text: 'echo' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '"Error: dotfiles theme directory not found"' },
+        { type: 'text', text: ' >&2' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'keyword', text: 'exit' },
+        { type: 'text', text: ' ' },
+        { type: 'number', text: '1' }
+      ]},
+      { tokens: [{ type: 'keyword', text: 'fi' }] },
+      { tokens: [] },
+      { tokens: [
+        { type: 'function', text: 'log_info' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '"Switching active theme to: ${THEME_NAME}"' }
+      ], isSelected: true },
+      { tokens: [
+        { type: 'keyword', text: 'echo' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '"${THEME_NAME}"' },
+        { type: 'operator', text: ' > ' },
+        { type: 'string', text: '"$DOTFILES_DIR/theme/current"' }
+      ], isSelected: true },
+      { tokens: [] },
+      { tokens: [{ type: 'comment', text: '# Trigger automatic terminal and tmux reload' }] },
+      { tokens: [
+        { type: 'keyword', text: 'if' },
+        { type: 'text', text: ' command -v tmux &>/dev/null; ' },
+        { type: 'keyword', text: 'then' }
+      ]},
+      { tokens: [
+        { type: 'text', text: '    ' },
+        { type: 'keyword', text: 'tmux' },
+        { type: 'text', text: ' source-file ' },
+        { type: 'string', text: '"$DOTFILES_DIR/theme/generated/tmux.conf"' }
+      ]},
+      { tokens: [{ type: 'keyword', text: 'fi' }] },
+      { tokens: [] },
+      { tokens: [
+        { type: 'function', text: 'log_info' },
+        { type: 'text', text: ' ' },
+        { type: 'string', text: '"Theme applied successfully."' }
+      ], hasCursor: true }
+    ]
+  },
+
+  // 7. Python
   {
     id: 'python',
     name: 'Python',
@@ -636,7 +1055,7 @@ export const SNIPPETS: LanguageSnippet[] = [
     ]
   },
 
-  // 5. Lua
+  // 8. Lua
   {
     id: 'lua',
     name: 'Lua (Neovim)',
@@ -752,94 +1171,6 @@ export const SNIPPETS: LanguageSnippet[] = [
         { type: 'text', text: ' ' },
         { type: 'variable', text: 'M' }
       ], hasCursor: true }
-    ]
-  },
-
-  // 6. HTML / CSS
-  {
-    id: 'html',
-    name: 'HTML & CSS',
-    filename: 'index.html',
-    lines: [
-      { tokens: [{ type: 'comment', text: '<!-- Chroma UI Component Hierarchy -->' }] },
-      { tokens: [
-        { type: 'tag', text: '<!doctype html>' }
-      ]},
-      { tokens: [
-        { type: 'tag', text: '<html' },
-        { type: 'text', text: ' ' },
-        { type: 'property', text: 'lang' },
-        { type: 'operator', text: '=' },
-        { type: 'string', text: '"en"' },
-        { type: 'text', text: ' ' },
-        { type: 'property', text: 'class' },
-        { type: 'operator', text: '=' },
-        { type: 'string', text: '"dark"' },
-        { type: 'tag', text: '>' }
-      ]},
-      { tokens: [
-        { type: 'text', text: '  ' },
-        { type: 'tag', text: '<head>' }
-      ]},
-      { tokens: [
-        { type: 'text', text: '    ' },
-        { type: 'tag', text: '<meta' },
-        { type: 'text', text: ' ' },
-        { type: 'property', text: 'charset' },
-        { type: 'operator', text: '=' },
-        { type: 'string', text: '"UTF-8"' },
-        { type: 'tag', text: ' />' }
-      ]},
-      { tokens: [
-        { type: 'text', text: '    ' },
-        { type: 'tag', text: '<title>' },
-        { type: 'text', text: 'Chroma Studio' },
-        { type: 'tag', text: '</title>' }
-      ]},
-      { tokens: [
-        { type: 'text', text: '  ' },
-        { type: 'tag', text: '</head>' }
-      ]},
-      { tokens: [
-        { type: 'text', text: '  ' },
-        { type: 'tag', text: '<body' },
-        { type: 'text', text: ' ' },
-        { type: 'property', text: 'class' },
-        { type: 'operator', text: '=' },
-        { type: 'string', text: '"surface-app"' },
-        { type: 'tag', text: '>' }
-      ]},
-      { tokens: [
-        { type: 'text', text: '    ' },
-        { type: 'tag', text: '<header' },
-        { type: 'text', text: ' ' },
-        { type: 'property', text: 'class' },
-        { type: 'operator', text: '=' },
-        { type: 'string', text: '"studio-bar"' },
-        { type: 'tag', text: '>' }
-      ]},
-      { tokens: [
-        { type: 'text', text: '      ' },
-        { type: 'tag', text: '<h1' },
-        { type: 'text', text: ' ' },
-        { type: 'property', text: 'class' },
-        { type: 'operator', text: '=' },
-        { type: 'string', text: '"text-accent font-bold"' },
-        { type: 'tag', text: '>' },
-        { type: 'text', text: 'Palette Engine' },
-        { type: 'tag', text: '</h1>' }
-      ], isSelected: true },
-      { tokens: [
-        { type: 'text', text: '    ' },
-        { type: 'tag', text: '</header>' }
-      ]},
-      { tokens: [
-        { type: 'text', text: '  ' },
-        { type: 'tag', text: '</body>' }
-      ], hasCursor: true },
-      { tokens: [
-        { type: 'tag', text: '</html>' }
-      ]}
     ]
   }
 ];
