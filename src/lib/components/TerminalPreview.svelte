@@ -240,6 +240,8 @@
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
+          onmouseenter={() => line.isSelected && theme.setHoveredSlot({ type: 'base', key: 'selection_bg', label: 'selection_bg' })}
+          onmouseleave={() => theme.setHoveredSlot(null)}
           onclick={(e) => handleLineClick(e, line)}
           class="flex items-center min-h-[1.5em] px-1 rounded-xs transition-colors {line.isSelected ? 'shadow-xs cursor-pointer' : ''}"
           style="{line.isSelected ? `background-color: ${theme.scheme.colors.selection_bg};` : ''}"
@@ -248,12 +250,15 @@
           {#each line.tokens as token}
             {@const mapping = getTokenMapping(token, !!line.isSelected)}
             {@const active = isTokenActive(token, !!line.isSelected)}
+            {@const hovered = theme.hoveredSlot?.type === mapping.type && theme.hoveredSlot?.key === mapping.key}
             {@const colorVal = mapping.type === 'base' ? (theme.scheme.colors as any)[mapping.key] : theme.scheme.ansi.colors[mapping.key as number]}
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <span
+              onmouseenter={() => theme.setHoveredSlot({ type: mapping.type, key: mapping.key, label: mapping.label })}
+              onmouseleave={() => theme.setHoveredSlot(null)}
               onclick={(e) => handleTokenClick(e, token, !!line.isSelected)}
-              class="cursor-pointer transition-all px-0.5 -mx-0.5 rounded-xs hover:ring-1 hover:ring-indigo-400 hover:bg-white/10 {active ? 'ring-2 ring-indigo-400 bg-indigo-500/25 font-bold shadow-xs' : ''}"
+              class="cursor-pointer transition-all px-0.5 -mx-0.5 rounded-xs hover:ring-1 hover:ring-indigo-400 hover:bg-white/10 {active ? 'ring-2 ring-indigo-400 bg-indigo-500/25 font-bold shadow-xs' : hovered ? 'ring-1 ring-indigo-300/80 bg-white/15' : ''}"
               style="{getTokenStyle(token, !!line.isSelected)}"
               title="Click to edit {mapping.roleName} ({mapping.label}: {colorVal})"
             >{token.text}</span>
@@ -263,6 +268,8 @@
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <span
+              onmouseenter={() => theme.setHoveredSlot({ type: 'base', key: 'cursor', label: 'cursor' })}
+              onmouseleave={() => theme.setHoveredSlot(null)}
               onclick={(e) => {
                 e.stopPropagation();
                 if (theme.activeSlot?.type === 'base' && theme.activeSlot?.key === 'cursor') {

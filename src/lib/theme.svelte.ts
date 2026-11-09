@@ -93,6 +93,7 @@ export class ThemeStore {
   toml = $state<string>(generateDotfilesToml(DEFAULT_SCHEME));
 
   activeSlot = $state<ActiveSlot | null>(null);
+  hoveredSlot = $state<ActiveSlot | null>(null);
 
   // Cached downscaled pixels for instant re-clustering on variant switch
   private cachedPixels: Uint8Array | null = null;
@@ -252,6 +253,10 @@ export class ThemeStore {
 
   setActiveSlot(slot: ActiveSlot | null) {
     this.activeSlot = slot;
+  }
+
+  setHoveredSlot(slot: ActiveSlot | null) {
+    this.hoveredSlot = slot;
   }
 
   async assignColor(hex: string) {

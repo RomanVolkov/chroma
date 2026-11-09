@@ -107,6 +107,9 @@
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
           isActive={theme.activeSlot?.type === 'base' && theme.activeSlot?.key === slot.key}
+          isHovered={theme.hoveredSlot?.type === 'base' && theme.hoveredSlot?.key === slot.key}
+          onhover={() => theme.setHoveredSlot({ type: 'base', key: slot.key, label: slot.label })}
+          onleave={() => theme.setHoveredSlot(null)}
           onselect={() => selectBase(slot.key, slot.label)}
           onchange={(hex) => changeBase(slot.key, hex)}
         />
@@ -124,6 +127,9 @@
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
           isActive={theme.activeSlot?.type === 'base' && theme.activeSlot?.key === slot.key}
+          isHovered={theme.hoveredSlot?.type === 'base' && theme.hoveredSlot?.key === slot.key}
+          onhover={() => theme.setHoveredSlot({ type: 'base', key: slot.key, label: slot.label })}
+          onleave={() => theme.setHoveredSlot(null)}
           onselect={() => selectBase(slot.key, slot.label)}
           onchange={(hex) => changeBase(slot.key, hex)}
         />
@@ -141,6 +147,9 @@
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
           isActive={theme.activeSlot?.type === 'base' && theme.activeSlot?.key === slot.key}
+          isHovered={theme.hoveredSlot?.type === 'base' && theme.hoveredSlot?.key === slot.key}
+          onhover={() => theme.setHoveredSlot({ type: 'base', key: slot.key, label: slot.label })}
+          onleave={() => theme.setHoveredSlot(null)}
           onselect={() => selectBase(slot.key, slot.label)}
           onchange={(hex) => changeBase(slot.key, hex)}
         />
@@ -153,10 +162,14 @@
     <h3 class="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">ANSI Palette (Normal & Bright)</h3>
     <div class="grid grid-cols-8 gap-1.5 p-2 rounded-lg bg-[#14171d] border border-[#262b35]">
       {#each theme.scheme.ansi.colors as color, idx}
+        {@const isActive = theme.activeSlot?.type === 'ansi' && theme.activeSlot?.key === idx}
+        {@const isHovered = theme.hoveredSlot?.type === 'ansi' && theme.hoveredSlot?.key === idx}
         <button
           id="slot-ansi-{idx}"
+          onmouseenter={() => theme.setHoveredSlot({ type: 'ansi', key: idx, label: `ANSI ${ansiLabels[idx]}` })}
+          onmouseleave={() => theme.setHoveredSlot(null)}
           onclick={() => selectAnsi(idx)}
-          class="aspect-square rounded flex flex-col items-center justify-center relative border transition-all cursor-pointer {theme.activeSlot?.type === 'ansi' && theme.activeSlot?.key === idx ? 'ring-2 ring-indigo-500 border-white scale-105 z-10' : 'border-white/10 hover:border-white/40'}"
+          class="aspect-square rounded flex flex-col items-center justify-center relative border transition-all duration-100 cursor-pointer {isActive ? 'ring-2 ring-indigo-500 border-white scale-105 z-10' : isHovered ? 'ring-2 ring-indigo-400 border-indigo-300 scale-105 z-10' : 'border-white/10 hover:border-white/40'}"
           style="background-color: {color};"
           title="{ansiLabels[idx]}: {color}"
         >
