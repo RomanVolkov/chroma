@@ -1,7 +1,7 @@
 <script lang="ts">
   import { theme } from '../theme.svelte';
   import Loupe from './Loupe.svelte';
-  import { Upload, ZoomIn, ZoomOut, RotateCcw, Crosshair } from 'lucide-svelte';
+  import { Upload, ZoomIn, ZoomOut, RotateCcw, Crosshair, X } from 'lucide-svelte';
 
   let canvasEl = $state<HTMLCanvasElement | null>(null);
   let containerEl = $state<HTMLDivElement | null>(null);
@@ -200,14 +200,23 @@
     </div>
 
     <!-- Active Slot Pill (Bottom overlay) -->
-    <div class="absolute bottom-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#14171d]/90 backdrop-blur-md border border-[#262b35] text-xs shadow-xl">
-      <span class="text-neutral-400">Target slot:</span>
-      <span class="font-medium text-neutral-200 capitalize">{theme.activeSlot.label}</span>
-      <div
-        class="w-3.5 h-3.5 rounded border border-white/20"
-        style="background-color: {theme.activeSlot.type === 'base' ? (theme.scheme.colors as any)[theme.activeSlot.key] : theme.scheme.ansi.colors[theme.activeSlot.key as number]};"
-      ></div>
-    </div>
+    {#if theme.activeSlot}
+      <div class="absolute bottom-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#14171d]/90 backdrop-blur-md border border-[#262b35] text-xs shadow-xl animate-in fade-in duration-150">
+        <span class="text-neutral-400">Target slot:</span>
+        <span class="font-medium text-neutral-200 capitalize">{theme.activeSlot.label}</span>
+        <div
+          class="w-3.5 h-3.5 rounded border border-white/20"
+          style="background-color: {theme.activeSlot.type === 'base' ? (theme.scheme.colors as any)[theme.activeSlot.key] : theme.scheme.ansi.colors[theme.activeSlot.key as number]};"
+        ></div>
+        <button
+          onclick={() => theme.setActiveSlot(null)}
+          class="ml-1 p-0.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+          title="Clear active slot"
+        >
+          <X class="w-3 h-3" />
+        </button>
+      </div>
+    {/if}
 
     <!-- Canvas Floating Toolbar -->
     <div class="absolute top-4 left-4 z-20 flex items-center gap-1 p-1 rounded-lg bg-[#14171d]/90 backdrop-blur-md border border-[#262b35] text-xs shadow-xl">

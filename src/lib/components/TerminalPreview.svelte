@@ -2,7 +2,7 @@
   import { theme } from '../theme.svelte';
   import { SNIPPETS, type SyntaxToken } from '../snippets';
   import { calculateContrastRatio, autoFixContrast } from '../adjustments';
-  import { Sparkles, CheckCircle, AlertTriangle } from 'lucide-svelte';
+  import { Sparkles, CheckCircle, AlertTriangle, X } from 'lucide-svelte';
 
   let selectedLangId = $state('typescript');
 
@@ -77,30 +77,54 @@
   function handleTokenClick(e: MouseEvent, token: SyntaxToken, isSelected: boolean) {
     e.stopPropagation();
     const mapping = getTokenMapping(token, isSelected);
-    theme.setActiveSlot({
-      type: mapping.type,
-      key: mapping.key,
-      label: mapping.label,
-    });
+    if (
+      theme.activeSlot &&
+      theme.activeSlot.type === mapping.type &&
+      theme.activeSlot.key === mapping.key
+    ) {
+      theme.setActiveSlot(null);
+    } else {
+      theme.setActiveSlot({
+        type: mapping.type,
+        key: mapping.key,
+        label: mapping.label,
+      });
+    }
   }
 
   function handleLineClick(e: MouseEvent, line: CodeLine) {
     if (line.isSelected) {
       e.stopPropagation();
-      theme.setActiveSlot({
-        type: 'base',
-        key: 'selection_bg',
-        label: 'selection_bg',
-      });
+      if (
+        theme.activeSlot &&
+        theme.activeSlot.type === 'base' &&
+        theme.activeSlot.key === 'selection_bg'
+      ) {
+        theme.setActiveSlot(null);
+      } else {
+        theme.setActiveSlot({
+          type: 'base',
+          key: 'selection_bg',
+          label: 'selection_bg',
+        });
+      }
     }
   }
 
   function handleBackgroundClick() {
-    theme.setActiveSlot({
-      type: 'base',
-      key: 'bg',
-      label: 'bg',
-    });
+    if (
+      theme.activeSlot &&
+      theme.activeSlot.type === 'base' &&
+      theme.activeSlot.key === 'bg'
+    ) {
+      theme.setActiveSlot(null);
+    } else {
+      theme.setActiveSlot({
+        type: 'base',
+        key: 'bg',
+        label: 'bg',
+      });
+    }
   }
 
   function getTokenStyle(token: SyntaxToken, isSelected: boolean): string {
@@ -140,6 +164,8 @@
   }
 </script>
 
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') theme.setActiveSlot(null); }} />
+
 <div
   class="h-full flex flex-col font-mono text-[12px] transition-colors duration-150 select-text overflow-hidden"
   style="background-color: {theme.scheme.colors.bg};"
@@ -169,11 +195,18 @@
     <div class="flex items-center gap-2.5 shrink-0">
       {#if theme.activeSlot}
         {@const activeColor = theme.activeSlot.type === 'base' ? (theme.scheme.colors as any)[theme.activeSlot.key] : theme.scheme.ansi.colors[theme.activeSlot.key as number]}
-        <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#14171d]/90 border border-indigo-500/40 text-[11px] font-medium text-neutral-200 shadow-xs">
+        <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#14171d]/90 border border-indigo-500/40 text-[11px] font-medium text-neutral-200 shadow-xs animate-in fade-in duration-100">
           <span class="text-neutral-400 text-[10px]">Slot:</span>
           <span class="text-indigo-300 font-semibold">{theme.activeSlot.label}</span>
           <span class="w-2.5 h-2.5 rounded-full border border-white/20 inline-block shrink-0 shadow-xs" style="background-color: {activeColor};"></span>
           <span class="text-[10px] font-mono text-neutral-400">{activeColor}</span>
+          <button
+            onclick={(e) => { e.stopPropagation(); theme.setActiveSlot(null); }}
+            class="ml-0.5 p-0.5 hover:bg-neutral-800 text-neutral-400 hover:text-white rounded transition-colors cursor-pointer"
+            title="Drop selection (Esc or click again)"
+          >
+            <X class="w-3 h-3" />
+          </button>
         </div>
       {/if}
 
@@ -232,7 +265,11 @@
             <span
               onclick={(e) => {
                 e.stopPropagation();
-                theme.setActiveSlot({ type: 'base', key: 'cursor', label: 'cursor' });
+                if (theme.activeSlot?.type === 'base' && theme.activeSlot?.key === 'cursor') {
+                  theme.setActiveSlot(null);
+                } else {
+                  theme.setActiveSlot({ type: 'base', key: 'cursor', label: 'cursor' });
+                }
               }}
               class="inline-block w-2 h-4 align-middle ml-0.5 animate-pulse rounded-xs cursor-pointer hover:ring-2 hover:ring-indigo-400"
               style="background-color: {theme.scheme.colors.cursor};"

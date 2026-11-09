@@ -92,11 +92,7 @@ export class ThemeStore {
   scheme = $state<SchemeData>(JSON.parse(JSON.stringify(DEFAULT_SCHEME)));
   toml = $state<string>(generateDotfilesToml(DEFAULT_SCHEME));
 
-  activeSlot = $state<ActiveSlot>({
-    type: 'base',
-    key: 'accent',
-    label: 'Accent',
-  });
+  activeSlot = $state<ActiveSlot | null>(null);
 
   // Cached downscaled pixels for instant re-clustering on variant switch
   private cachedPixels: Uint8Array | null = null;
@@ -254,7 +250,7 @@ export class ThemeStore {
     }
   }
 
-  setActiveSlot(slot: ActiveSlot) {
+  setActiveSlot(slot: ActiveSlot | null) {
     this.activeSlot = slot;
   }
 

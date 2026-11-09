@@ -39,11 +39,19 @@
   ];
 
   function selectBase(key: keyof SchemeColors, label: string) {
-    theme.setActiveSlot({ type: 'base', key, label });
+    if (theme.activeSlot?.type === 'base' && theme.activeSlot?.key === key) {
+      theme.setActiveSlot(null);
+    } else {
+      theme.setActiveSlot({ type: 'base', key, label });
+    }
   }
 
   function selectAnsi(index: number) {
-    theme.setActiveSlot({ type: 'ansi', key: index, label: `ANSI ${ansiLabels[index]}` });
+    if (theme.activeSlot?.type === 'ansi' && theme.activeSlot?.key === index) {
+      theme.setActiveSlot(null);
+    } else {
+      theme.setActiveSlot({ type: 'ansi', key: index, label: `ANSI ${ansiLabels[index]}` });
+    }
   }
 
   function changeBase(key: keyof SchemeColors, hex: string) {
@@ -98,7 +106,7 @@
           id="slot-{slot.key}"
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
-          isActive={theme.activeSlot.type === 'base' && theme.activeSlot.key === slot.key}
+          isActive={theme.activeSlot?.type === 'base' && theme.activeSlot?.key === slot.key}
           onselect={() => selectBase(slot.key, slot.label)}
           onchange={(hex) => changeBase(slot.key, hex)}
         />
@@ -115,7 +123,7 @@
           id="slot-{slot.key}"
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
-          isActive={theme.activeSlot.type === 'base' && theme.activeSlot.key === slot.key}
+          isActive={theme.activeSlot?.type === 'base' && theme.activeSlot?.key === slot.key}
           onselect={() => selectBase(slot.key, slot.label)}
           onchange={(hex) => changeBase(slot.key, hex)}
         />
@@ -132,7 +140,7 @@
           id="slot-{slot.key}"
           label={slot.label}
           color={theme.scheme.colors[slot.key]}
-          isActive={theme.activeSlot.type === 'base' && theme.activeSlot.key === slot.key}
+          isActive={theme.activeSlot?.type === 'base' && theme.activeSlot?.key === slot.key}
           onselect={() => selectBase(slot.key, slot.label)}
           onchange={(hex) => changeBase(slot.key, hex)}
         />
@@ -148,7 +156,7 @@
         <button
           id="slot-ansi-{idx}"
           onclick={() => selectAnsi(idx)}
-          class="aspect-square rounded flex flex-col items-center justify-center relative border transition-all cursor-pointer {theme.activeSlot.type === 'ansi' && theme.activeSlot.key === idx ? 'ring-2 ring-indigo-500 border-white scale-105 z-10' : 'border-white/10 hover:border-white/40'}"
+          class="aspect-square rounded flex flex-col items-center justify-center relative border transition-all cursor-pointer {theme.activeSlot?.type === 'ansi' && theme.activeSlot?.key === idx ? 'ring-2 ring-indigo-500 border-white scale-105 z-10' : 'border-white/10 hover:border-white/40'}"
           style="background-color: {color};"
           title="{ansiLabels[idx]}: {color}"
         >

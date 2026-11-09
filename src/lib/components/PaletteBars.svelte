@@ -12,6 +12,7 @@
   }
 
   function getActiveColor(): string {
+    if (!theme.activeSlot) return '';
     if (theme.activeSlot.type === 'base') {
       return (theme.scheme.colors as any)[theme.activeSlot.key] || '';
     } else {
@@ -70,7 +71,7 @@
           onmouseleave={() => (hoveredIndex = null)}
           class="flex-1 h-full relative group transition-all duration-150 cursor-pointer border-r border-black/20 last:border-r-0 flex flex-col justify-end p-1.5"
           style="background-color: {swatch.hex};"
-          title="{swatch.hex} ({(swatch.weight * 100).toFixed(1)}% of image) — Click to assign to {theme.activeSlot.label}"
+          title="{swatch.hex} ({(swatch.weight * 100).toFixed(1)}% of image){theme.activeSlot ? ` — Click to assign to ${theme.activeSlot.label}` : ''}"
         >
           <!-- Active Slot Indicator Dot -->
           {#if isActive}
