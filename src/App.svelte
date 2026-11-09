@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { theme } from './lib/theme.svelte';
+  import { theme, generateDotfilesToml } from './lib/theme.svelte';
   import HeaderBar from './lib/components/HeaderBar.svelte';
   import ImageCanvas from './lib/components/ImageCanvas.svelte';
   import PaletteBars from './lib/components/PaletteBars.svelte';
@@ -9,11 +9,18 @@
   import ExportModal from './lib/components/ExportModal.svelte';
   import AdjustmentsDrawer from './lib/components/AdjustmentsDrawer.svelte';
   import { initEngine } from './worker/client';
-  import { X, AlertTriangle, Check } from 'lucide-svelte';
+  import { X, AlertTriangle, Check, Copy } from 'lucide-svelte';
 
   let showTomlDrawer = $state(false);
   let showAdjustmentsDrawer = $state(false);
   let showExportModal = $state(false);
+  let tomlCopied = $state(false);
+
+  function copyDrawerToml() {
+    navigator.clipboard.writeText(theme.toml || generateDotfilesToml(theme.scheme));
+    tomlCopied = true;
+    setTimeout(() => (tomlCopied = false), 2000);
+  }
 
   onMount(() => {
     // Warm up the Go WebAssembly runtime in the background
@@ -57,6 +64,7 @@
     onToggleCode={() => {
       showTomlDrawer = !showTomlDrawer;
       if (showTomlDrawer) {
+        theme.updateToml();
         showAdjustmentsDrawer = false;
         showExportModal = false;
       }
@@ -125,17 +133,35 @@
     <!-- 3. Raw TOML Drawer Slide-Over -->
     {#if showTomlDrawer}
       <div class="absolute inset-y-0 right-0 w-96 z-40 bg-[#14171d] border-l border-[#262b35] shadow-2xl flex flex-col animate-in slide-in-from-right duration-150">
-        <div class="h-12 border-b border-[#262b35] px-4 flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-neutral-300">Raw TOML Output</span>
-          <button
-            onclick={() => (showTomlDrawer = false)}
-            class="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer"
-          >
-            <X class="w-4 h-4" />
-          </button>
+        <div class="h-12 border-b border-[#262b35] px-4 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-neutral-300">Raw TOML Output</span>
+            <span class="text-[10px] text-neutral-500 font-mono">({theme.scheme.name.toLowerCase().replace(/\s+/g, '-')}.toml)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button
+              onclick={copyDrawerToml}
+              class="flex items-center gap-1 px-2.5 py-1 rounded bg-[#1a1e26] hover:bg-[#202631] text-[11px] font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer border border-[#262b35]"
+              title="Copy TOML to clipboard"
+            >
+              {#if tomlCopied}
+                <Check class="w-3 h-3 text-emerald-400" />
+                <span class="text-emerald-400">Copied!</span>
+              {:else}
+                <Copy class="w-3 h-3 text-neutral-400" />
+                <span>Copy</span>
+              {/if}
+            </button>
+            <button
+              onclick={() => (showTomlDrawer = false)}
+              class="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer"
+            >
+              <X class="w-4 h-4" />
+            </button>
+          </div>
         </div>
-        <div class="flex-1 p-4 overflow-auto">
-          <pre class="font-mono text-[11px] leading-relaxed text-neutral-300 select-all whitespace-pre-wrap">{theme.toml}</pre>
+        <div class="flex-1 p-4 overflow-auto bg-[#0d0f12]">
+          <pre class="font-mono text-[11px] leading-relaxed text-neutral-300 select-all whitespace-pre-wrap">{theme.toml || generateDotfilesToml(theme.scheme)}</pre>
         </div>
       </div>
     {/if}

@@ -15,6 +15,7 @@
   let copied = $state(false);
 
   function copyToml() {
+    theme.updateToml();
     navigator.clipboard.writeText(theme.toml);
     copied = true;
     setTimeout(() => (copied = false), 2000);
