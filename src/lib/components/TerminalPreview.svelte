@@ -32,13 +32,6 @@
   }
 
   function getTokenMapping(token: SyntaxToken, isSelected: boolean): TokenMapping {
-    if (isSelected) {
-      if (token.type === 'comment') {
-        return { type: 'base', key: 'fg_muted', label: 'fg_muted', roleName: 'Comment' };
-      }
-      return { type: 'base', key: 'selection_fg', label: 'selection_fg', roleName: 'Selection Text' };
-    }
-
     switch (token.type) {
       case 'comment':
         return { type: 'base', key: 'fg_muted', label: 'fg_muted', roleName: 'Comment' };
@@ -56,7 +49,9 @@
       case 'property':
         return { type: 'base', key: 'accent_info', label: 'accent_info (Property)', roleName: 'Property' };
       case 'variable':
-        return { type: 'base', key: 'fg', label: 'fg', roleName: 'Variable' };
+        return isSelected
+          ? { type: 'base', key: 'selection_fg', label: 'selection_fg', roleName: 'Selection Text' }
+          : { type: 'base', key: 'fg', label: 'fg', roleName: 'Variable' };
       case 'operator':
         return { type: 'base', key: 'accent_info', label: 'accent_info (Operator)', roleName: 'Operator' };
       case 'tag':
@@ -64,7 +59,9 @@
       case 'punctuation':
         return { type: 'base', key: 'fg_dim', label: 'fg_dim', roleName: 'Punctuation' };
       default:
-        return { type: 'base', key: 'fg', label: 'fg', roleName: 'Text' };
+        return isSelected
+          ? { type: 'base', key: 'selection_fg', label: 'selection_fg', roleName: 'Selection Text' }
+          : { type: 'base', key: 'fg', label: 'fg', roleName: 'Text' };
     }
   }
 
@@ -128,11 +125,6 @@
   }
 
   function getTokenStyle(token: SyntaxToken, isSelected: boolean): string {
-    if (isSelected) {
-      if (token.type === 'comment') return `color: ${theme.scheme.colors.fg_muted}; font-style: italic;`;
-      return `color: ${theme.scheme.colors.selection_fg};`;
-    }
-
     const c = theme.scheme.colors;
     const a = theme.scheme.ansi.colors;
     switch (token.type) {
@@ -152,7 +144,7 @@
       case 'property':
         return `color: ${c.accent_info || a[6]};`;
       case 'variable':
-        return `color: ${c.fg};`;
+        return `color: ${isSelected ? (c.selection_fg || c.fg) : c.fg};`;
       case 'operator':
         return `color: ${c.accent_info || a[6]};`;
       case 'tag':
@@ -160,7 +152,7 @@
       case 'punctuation':
         return `color: ${c.fg_dim};`;
       default:
-        return `color: ${c.fg};`;
+        return `color: ${isSelected ? (c.selection_fg || c.fg) : c.fg};`;
     }
   }
 </script>
