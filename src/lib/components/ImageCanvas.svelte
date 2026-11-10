@@ -176,7 +176,7 @@
         </div>
       {/if}
 
-      <label class="flex flex-col items-center justify-center p-5 w-full border border-dashed border-[#262b35] hover:border-indigo-500/50 rounded-xl bg-[#14171d]/60 backdrop-blur-xs cursor-pointer transition-all hover:bg-[#1a1e26]/80 group">
+      <label class="flex flex-col items-center justify-center p-5 w-full border border-dashed rounded-xl backdrop-blur-xs cursor-pointer transition-all group {isDragging ? 'border-indigo-400 bg-indigo-500/15 ring-2 ring-indigo-500/30' : 'border-[#262b35] hover:border-indigo-500/50 bg-[#14171d]/60 hover:bg-[#1a1e26]/80'}">
         <input type="file" accept="image/*,.toml,.json,.yaml,.yml,.conf,.lua,.ini,.Xresources,text/plain" class="hidden" onchange={handleFileInput} />
         <div class="w-9 h-9 rounded-lg bg-neutral-900 border border-[#262b35] flex items-center justify-center mb-2 group-hover:scale-105 group-hover:border-indigo-500/40 transition-all text-neutral-400 group-hover:text-indigo-400">
           <Upload class="w-4 h-4" />
@@ -198,6 +198,14 @@
         class="max-w-none shadow-2xl rounded border border-white/5 pointer-events-auto"
       ></canvas>
     </div>
+
+    <!-- Drag overlay when dragging over existing image -->
+    {#if isDragging}
+      <div class="absolute inset-0 z-30 bg-black/70 backdrop-blur-xs border-2 border-dashed border-indigo-400 m-2 rounded-xl flex flex-col items-center justify-center gap-2 pointer-events-none animate-in fade-in duration-100">
+        <Upload class="w-6 h-6 text-indigo-400 animate-bounce" />
+        <span class="text-xs font-semibold text-white">Drop to replace image</span>
+      </div>
+    {/if}
 
     <!-- Active Slot Pill (Bottom overlay) -->
     {#if theme.activeSlot}

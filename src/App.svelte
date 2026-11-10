@@ -9,12 +9,53 @@
   import ExportModal from './lib/components/ExportModal.svelte';
   import AdjustmentsDrawer from './lib/components/AdjustmentsDrawer.svelte';
   import { initEngine } from './worker/client';
-  import { X, AlertTriangle, Check, Copy } from 'lucide-svelte';
+  import { X, AlertTriangle, Check, Copy, ImagePlus } from 'lucide-svelte';
 
   let showTomlDrawer = $state(false);
   let showAdjustmentsDrawer = $state(false);
   let showExportModal = $state(false);
   let tomlCopied = $state(false);
+
+  let isWindowDragging = $state(false);
+  let dragCounter = 0;
+
+  function handleWindowDragEnter(e: DragEvent) {
+    e.preventDefault();
+    dragCounter++;
+    if (e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files')) {
+      isWindowDragging = true;
+    }
+  }
+
+  function handleWindowDragOver(e: DragEvent) {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy';
+    }
+  }
+
+  function handleWindowDragLeave(e: DragEvent) {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      isWindowDragging = false;
+    }
+  }
+
+  function handleWindowDrop(e: DragEvent) {
+    e.preventDefault();
+    isWindowDragging = false;
+    dragCounter = 0;
+    const file = e.dataTransfer?.files?.[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        theme.loadFile(file);
+      } else {
+        theme.importTheme(file);
+      }
+    }
+  }
 
   function copyDrawerToml() {
     navigator.clipboard.writeText(theme.toml || generateDotfilesToml(theme.scheme));
@@ -32,7 +73,28 @@
   });
 </script>
 
-<div class="h-screen w-screen flex flex-col bg-[#0d0f12] text-[#e6edf3] overflow-hidden font-mono">
+<svelte:window
+  ondragenter={handleWindowDragEnter}
+  ondragover={handleWindowDragOver}
+  ondragleave={handleWindowDragLeave}
+  ondrop={handleWindowDrop}
+/>
+
+<div class="h-screen w-screen flex flex-col bg-[#0d0f12] text-[#e6edf3] overflow-hidden font-mono relative">
+  <!-- Global Drag & Drop Overlay -->
+  {#if isWindowDragging}
+    <div
+      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm border-2 border-dashed border-indigo-500 m-3 rounded-2xl flex flex-col items-center justify-center gap-3 animate-in fade-in duration-150 pointer-events-none select-none shadow-2xl"
+    >
+      <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shadow-xl animate-bounce">
+        <ImagePlus class="w-8 h-8" />
+      </div>
+      <div class="text-center">
+        <h2 class="text-base font-bold text-white tracking-wide">Drop Image or Theme to Load</h2>
+        <p class="text-xs text-neutral-400 mt-1">Extracts a color scheme from any image or imports a theme config</p>
+      </div>
+    </div>
+  {/if}
   <!-- Status Success Notification Banner -->
   {#if theme.statusMessage}
     <div class="bg-emerald-950/90 border-b border-emerald-800/80 px-4 py-2 flex items-center justify-between text-xs text-emerald-200 z-50">
