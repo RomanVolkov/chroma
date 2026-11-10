@@ -226,3 +226,50 @@ func EnsureContrastHex(hex string, bgRGB RGB, minRatio float64, isDark bool) str
 
 	return bestHex
 }
+
+// EnsureVibrantContrast ensures an accent/ANSI color has both adequate perceptual chroma
+// (avoiding muddy grays) and high contrast against background.
+func EnsureVibrantContrast(hex string, bgRGB RGB, targetHue float64, minRatio float64, isDark bool) string {
+	rgb, err := HexToRGB(hex)
+	if err != nil {
+		if isDark {
+			return "#e6edf3"
+		}
+		return "#1f2328"
+	}
+
+	lab := RGBToLab(rgb)
+
+	// If the extracted swatch is essentially a neutral gray/mud (chroma < 20),
+	// rotate it toward targetHue and give it healthy saturation so it actually works as an accent!
+	if lab.Chroma() < 20.0 {
+		rad := targetHue * (math.Pi / 180.0)
+		targetChroma := 40.0
+		lab.A = targetChroma * math.Cos(rad)
+		lab.B = targetChroma * math.Sin(rad)
+	} else if lab.Chroma() < 32.0 {
+		// Retain existing hue, but lift saturation
+		factor := 32.0 / lab.Chroma()
+		lab.A *= factor
+		lab.B *= factor
+	}
+
+	// In dark mode, ensure lightness is in the clean, legible 65-85 range
+	if isDark {
+		if lab.L < 65.0 {
+			lab.L = 68.0
+		} else if lab.L > 90.0 {
+			lab.L = 84.0
+		}
+	} else {
+		// In light mode, ensure lightness is in the 30-45 range
+		if lab.L > 45.0 {
+			lab.L = 36.0
+		} else if lab.L < 20.0 {
+			lab.L = 28.0
+		}
+	}
+
+	resRGB := LabToRGB(lab)
+	return EnsureContrastHex(RGBToHex(resRGB), bgRGB, minRatio, isDark)
+}

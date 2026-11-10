@@ -69,14 +69,14 @@ func MapSwatchesToScheme(name string, variant string, swatches []Swatch) Scheme 
 	bgRGB, _ := HexToRGB(colors.Bg)
 	isDark := variant == "dark"
 
-	// Standard hue targets: Yellow(65), Blue(240), Magenta(310), Cyan(190)
-	yellow := EnsureContrastHex(findClosestHue(byChroma, 65.0).Hex, bgRGB, 4.5, isDark)
-	blue := EnsureContrastHex(findClosestHue(byChroma, 240.0).Hex, bgRGB, 4.5, isDark)
-	magenta := EnsureContrastHex(findClosestHue(byChroma, 310.0).Hex, bgRGB, 4.5, isDark)
-	cyan := EnsureContrastHex(findClosestHue(byChroma, 190.0).Hex, bgRGB, 4.5, isDark)
+	// Standard hue targets: Yellow(65), Blue(240), Magenta(310), Cyan(190) with vibrant saturation
+	yellow := EnsureVibrantContrast(findClosestHue(byChroma, 65.0).Hex, bgRGB, 65.0, 4.5, isDark)
+	blue := EnsureVibrantContrast(findClosestHue(byChroma, 240.0).Hex, bgRGB, 240.0, 4.5, isDark)
+	magenta := EnsureVibrantContrast(findClosestHue(byChroma, 310.0).Hex, bgRGB, 310.0, 4.5, isDark)
+	cyan := EnsureVibrantContrast(findClosestHue(byChroma, 190.0).Hex, bgRGB, 190.0, 4.5, isDark)
 
 	// Primary Accent: dominant vibrant color
-	colors.Accent = EnsureContrastHex(byChroma[0].Hex, bgRGB, 4.5, isDark)
+	colors.Accent = EnsureVibrantContrast(byChroma[0].Hex, bgRGB, byChroma[0].Lab.Hue(), 4.5, isDark)
 	colors.Cursor = colors.Accent
 
 	// Synchronize base roles with ANSI spectrum for 1:1 editor parity:
@@ -160,8 +160,8 @@ func generateANSI(colors Colors, swatches []Swatch, variant string) ANSI {
 	isDark := variant == "dark"
 
 	// Hue targets for ANSI slots 1 (red) and 2 (green)
-	red := EnsureContrastHex(findClosestHue(swatches, 20.0).Hex, bgRGB, 4.5, isDark)
-	green := EnsureContrastHex(findClosestHue(swatches, 130.0).Hex, bgRGB, 4.5, isDark)
+	red := EnsureVibrantContrast(findClosestHue(swatches, 20.0).Hex, bgRGB, 20.0, 4.5, isDark)
+	green := EnsureVibrantContrast(findClosestHue(swatches, 130.0).Hex, bgRGB, 130.0, 4.5, isDark)
 
 	var normal [8]string
 	if variant == "dark" {

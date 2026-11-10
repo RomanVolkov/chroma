@@ -184,18 +184,18 @@ export function autoFixContrast(colors: SchemeColors, variant: 'dark' | 'light')
   for (const k of textKeys) {
     let currentHex = res[k];
     let ratio = calculateContrastRatio(currentHex, bg);
+    const rgb = hexToRgb(currentHex);
+    let { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
 
-    if (ratio < minTextRatio || currentHex.toLowerCase() === bg.toLowerCase()) {
-      // Adjust lightness in HSL until ratio >= 4.5 or max attempts reached
-      const rgb = hexToRgb(currentHex);
-      let { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
-      s = Math.max(s, 35); // Ensure saturation doesn't wash out completely
+    if (ratio < minTextRatio || currentHex.toLowerCase() === bg.toLowerCase() || (isDark && l < 58) || (!isDark && l > 48)) {
+      // Adjust lightness and saturation in HSL for vibrant, legible contrast
+      s = Math.max(s, 40); // Ensure healthy saturation
 
       for (let step = 0; step < 30; step++) {
         if (isDark) {
-          l = Math.min(96, l + 2.5);
+          l = Math.min(96, Math.max(65, l + 2.5));
         } else {
-          l = Math.max(8, l - 2.5);
+          l = Math.max(8, Math.min(38, l - 2.5));
         }
         const candidate = rgbToHex(hslToRgb(h, s, l).r, hslToRgb(h, s, l).g, hslToRgb(h, s, l).b);
         ratio = calculateContrastRatio(candidate, bg);
