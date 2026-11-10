@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { theme } from '../theme.svelte';
+  import { theme, extractDroppedImageUrl } from '../theme.svelte';
   import Loupe from './Loupe.svelte';
   import { Upload, ZoomIn, ZoomOut, RotateCcw, Crosshair, X } from 'lucide-svelte';
 
@@ -61,12 +61,23 @@
   function handleFileDrop(e: DragEvent) {
     e.preventDefault();
     isDragging = false;
+
+    // 1. Check local dropped file
     const file = e.dataTransfer?.files?.[0];
-    if (file) {
+    if (file && file.size > 0) {
       if (file.type.startsWith('image/')) {
         theme.loadFile(file);
       } else {
         theme.importTheme(file);
+      }
+      return;
+    }
+
+    // 2. Check web image dragged from browser split-view (e.g. Unsplash)
+    if (e.dataTransfer) {
+      const url = extractDroppedImageUrl(e.dataTransfer);
+      if (url) {
+        theme.loadFromUrl(url);
       }
     }
   }

@@ -91,6 +91,33 @@ colors = [
 ${toolsBlock}`;
 }
 
+export function extractDroppedImageUrl(dataTransfer: DataTransfer): string | null {
+  // 1. Check text/html for <img ... src="..."> (Zen, Firefox, Chrome split-view drag)
+  const html = dataTransfer.getData('text/html');
+  if (html) {
+    const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  // 2. Check text/uri-list
+  const uriList = dataTransfer.getData('text/uri-list');
+  if (uriList) {
+    const lines = uriList.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+    const imgUrl = lines.find((u) => u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:image/'));
+    if (imgUrl) return imgUrl;
+  }
+
+  // 3. Check text/plain
+  const text = dataTransfer.getData('text/plain')?.trim();
+  if (text && (/^https?:\/\//i.test(text) || /^data:image\//i.test(text))) {
+    return text;
+  }
+
+  return null;
+}
+
 export class ThemeStore {
   imageUrl = $state<string | null>(null);
   imageWidth = $state<number>(0);
@@ -182,6 +209,113 @@ export class ThemeStore {
     } catch (err: any) {
       console.error('Error extracting palette from image:', err);
       this.error = err?.message || 'Failed to process image';
+    } finally {
+      this.isAnalyzing = false;
+    }
+  }
+
+  async loadFromUrl(url: string, customName?: string) {
+    this.isAnalyzing = true;
+    this.error = null;
+    this.lastImportedFormat = null;
+    this.lastImportedName = null;
+
+    try {
+      if (this.imageUrl && this.imageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(this.imageUrl);
+      }
+
+      // Try fetching as Blob first (enables clean canvas pixel extraction without CORS tainting)
+      let resolvedSrc = url;
+      let titleName = customName;
+
+      try {
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          if (blob.type.startsWith('image/') || blob.size > 0) {
+            resolvedSrc = URL.createObjectURL(blob);
+          }
+        }
+      } catch (fetchErr) {
+        console.warn('Fetch image failed, falling back to direct URL with crossOrigin anonymous:', fetchErr);
+      }
+
+      if (!titleName) {
+        try {
+          const parsed = new URL(url);
+          const segments = parsed.pathname.split('/').filter(Boolean);
+          const last = segments.pop() || '';
+          if (last.length > 2) {
+            titleName = last.split('?')[0].replace(/[-_]/g, ' ');
+          } else {
+            titleName = parsed.hostname.replace('www.', '') + ' Wallpaper';
+          }
+        } catch {
+          titleName = 'Web Image';
+        }
+      }
+
+      this.imageUrl = resolvedSrc;
+      const cleanName = titleName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      this.scheme.name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = resolvedSrc;
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('Failed to load image from URL. The image server may disallow cross-origin access.'));
+      });
+
+      this.imageWidth = img.naturalWidth;
+      this.imageHeight = img.naturalHeight;
+
+      // Downsample to max 384x384 for fast clustering
+      const maxDim = 384;
+      let targetW = img.naturalWidth;
+      let targetH = img.naturalHeight;
+      if (targetW > maxDim || targetH > maxDim) {
+        if (targetW > targetH) {
+          targetH = Math.round((targetH * maxDim) / targetW);
+          targetW = maxDim;
+        } else {
+          targetW = Math.round((targetW * maxDim) / targetH);
+          targetH = maxDim;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) throw new Error('Failed to create canvas context');
+
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+      const imgData = ctx.getImageData(0, 0, targetW, targetH);
+      this.cachedPixels = new Uint8Array(imgData.data.buffer);
+
+      // Run extraction in Go WebAssembly worker
+      const result: ExtractResult = await extractPalette(
+        this.cachedPixels.slice(),
+        this.scheme.variant,
+        16
+      );
+
+      this.swatches = [...result.swatches];
+      const validatedColors = autoFixContrast(result.scheme.colors, this.scheme.variant);
+      this.scheme = {
+        name: this.scheme.name,
+        variant: this.scheme.variant,
+        colors: validatedColors,
+        ansi: { colors: [...result.scheme.ansi.colors] },
+        tools: { ...this.scheme.tools },
+      };
+      this.updateToml();
+    } catch (err: any) {
+      console.error('Error loading image from URL:', err);
+      this.error = err?.message || 'Failed to process web image';
     } finally {
       this.isAnalyzing = false;
     }

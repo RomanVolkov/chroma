@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { theme, generateDotfilesToml } from './lib/theme.svelte';
+  import { theme, generateDotfilesToml, extractDroppedImageUrl } from './lib/theme.svelte';
   import HeaderBar from './lib/components/HeaderBar.svelte';
   import ImageCanvas from './lib/components/ImageCanvas.svelte';
   import PaletteBars from './lib/components/PaletteBars.svelte';
@@ -22,8 +22,11 @@
   function handleWindowDragEnter(e: DragEvent) {
     e.preventDefault();
     dragCounter++;
-    if (e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files')) {
-      isWindowDragging = true;
+    if (e.dataTransfer) {
+      const types = Array.from(e.dataTransfer.types);
+      if (types.includes('Files') || types.includes('text/uri-list') || types.includes('text/html') || types.includes('text/plain')) {
+        isWindowDragging = true;
+      }
     }
   }
 
@@ -47,12 +50,23 @@
     e.preventDefault();
     isWindowDragging = false;
     dragCounter = 0;
+
+    // 1. Check local dropped file
     const file = e.dataTransfer?.files?.[0];
-    if (file) {
+    if (file && file.size > 0) {
       if (file.type.startsWith('image/')) {
         theme.loadFile(file);
       } else {
         theme.importTheme(file);
+      }
+      return;
+    }
+
+    // 2. Check web image dragged from browser split-view (e.g. Unsplash)
+    if (e.dataTransfer) {
+      const url = extractDroppedImageUrl(e.dataTransfer);
+      if (url) {
+        theme.loadFromUrl(url);
       }
     }
   }
