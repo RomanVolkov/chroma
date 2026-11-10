@@ -72,6 +72,22 @@
     theme.updateToml();
   }
 
+  let ansiInputRefs: (HTMLInputElement | undefined)[] = $state([]);
+
+  function openAnsiPicker(index: number) {
+    const input = ansiInputRefs[index];
+    if (!input) return;
+    if (typeof input.showPicker === 'function') {
+      try {
+        input.showPicker();
+      } catch {
+        input.click();
+      }
+    } else {
+      input.click();
+    }
+  }
+
   $effect(() => {
     if (theme.activeSlot) {
       const id = theme.activeSlot.type === 'base'
@@ -172,17 +188,33 @@
       {#each theme.scheme.ansi.colors as color, idx}
         {@const isActive = theme.activeSlot?.type === 'ansi' && theme.activeSlot?.key === idx}
         {@const isHovered = theme.hoveredSlot?.type === 'ansi' && theme.hoveredSlot?.key === idx}
-        <button
+        <div
           id="slot-ansi-{idx}"
+          role="button"
+          tabindex="0"
           onmouseenter={() => theme.setHoveredSlot({ type: 'ansi', key: idx, label: `ANSI ${ansiLabels[idx]}` })}
           onmouseleave={() => theme.setHoveredSlot(null)}
           onclick={() => selectAnsi(idx)}
-          class="aspect-square rounded flex flex-col items-center justify-center relative border transition-all duration-100 cursor-pointer {isActive ? 'ring-2 ring-indigo-500 border-white scale-105 z-10' : isHovered ? 'ring-2 ring-indigo-400 border-indigo-300 scale-105 z-10' : 'border-white/10 hover:border-white/40'}"
+          ondblclick={(e) => {
+            e.preventDefault();
+            selectAnsi(idx);
+            openAnsiPicker(idx);
+          }}
+          onkeydown={(e) => e.key === 'Enter' && selectAnsi(idx)}
+          class="aspect-square rounded flex flex-col items-center justify-center relative border transition-all duration-100 cursor-pointer overflow-hidden {isActive ? 'ring-2 ring-indigo-500 border-white scale-105 z-10' : isHovered ? 'ring-2 ring-indigo-400 border-indigo-300 scale-105 z-10' : 'border-white/10 hover:border-white/40'}"
           style="background-color: {color};"
-          title="{ansiLabels[idx]}: {color}"
+          title="{ansiLabels[idx]}: {color} (click to select, double-click to edit)"
         >
-          <span class="text-[9px] font-mono mix-blend-difference text-white/80 select-none">{idx}</span>
-        </button>
+          <input
+            bind:this={ansiInputRefs[idx]}
+            type="color"
+            value={color}
+            oninput={(e) => changeAnsi(idx, (e.target as HTMLInputElement).value)}
+            class="absolute inset-0 opacity-0 cursor-pointer w-full h-full pointer-events-none"
+            tabindex="-1"
+          />
+          <span class="text-[9px] font-mono mix-blend-difference text-white/80 select-none pointer-events-none">{idx}</span>
+        </div>
       {/each}
     </div>
   </div>
