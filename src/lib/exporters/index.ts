@@ -1470,4 +1470,118 @@ settings set prompt "${c.accent}❯${c.fg} "
 `;
     },
   },
+
+  // 51. Inkdrop Markdown App (v6+)
+  {
+    id: 'inkdrop',
+    name: 'Inkdrop (v6+)',
+    category: 'Editor',
+    filename: (s) => `inkdrop-${slugify(s.name)}.css`,
+    generate: (s) => {
+      const c = s.colors;
+      const a = s.ansi.colors;
+      return `/* ${s.name} Theme for Inkdrop (v6+)
+ * To apply: Paste into your styles.css via Inkdrop > Preferences > Open Config Folder > styles.css
+ */
+
+@layer theme.ui {
+  :root {
+    --page-background: ${c.bg};
+    --sidebar-background: ${c.bg_alt};
+    --sidebar-foreground: ${c.fg};
+    --sidebar-active-background: ${c.surface_hi};
+    --sidebar-active-foreground: ${c.accent};
+    --side-bar-header-color: ${c.fg_dim};
+    --side-bar-item-background-hover: ${c.surface};
+    --note-list-bar-background: ${c.bg_deep};
+    --note-list-bar-item-background-active: ${c.surface_hi};
+    --note-list-bar-item-title-color: ${c.fg};
+    --note-list-bar-item-snippet-color: ${c.fg_muted};
+    --background-primary: ${c.bg};
+    --background-secondary: ${c.bg_alt};
+    --border-color: ${c.border};
+    --primary-color: ${c.accent};
+    --accent-color: ${c.accent};
+    --scrollbar-track-background: ${c.surface};
+    --scrollbar-thumb-background: ${c.surface_hi};
+  }
+}
+
+@layer theme.syntax {
+  :root {
+    --editor-background: ${c.bg};
+    --editor-background-color: ${c.bg};
+    --editor-foreground: ${c.fg};
+    --editor-foreground-color: ${c.fg};
+    --editor-caret-color: ${c.cursor};
+    --editor-cursor-color: ${c.cursor};
+    --fat-cursor-color: ${c.cursor};
+    --editor-selection-background: ${c.selection_bg};
+    --editor-gutter-background: ${c.bg_alt};
+    --editor-gutter-foreground: ${c.fg_muted};
+    --editor-active-line-background: ${c.bg_alt};
+
+    /* Syntax Tokens (CodeMirror 6 / Lezer) */
+    --syntax-color: ${c.fg};
+    --syntax-keyword-color: ${c.accent_alt || a[5]};
+    --syntax-function-color: ${c.blue || a[4]};
+    --syntax-type-color: ${c.accent_info || a[6]};
+    --syntax-string-color: ${a[2]};
+    --syntax-number-color: ${c.warn || a[3]};
+    --syntax-boolean-color: ${c.warn || a[3]};
+    --syntax-comment-color: ${c.fg_muted};
+    --syntax-comment-font-style: italic;
+    --syntax-operator-color: ${c.accent_info || a[6]};
+    --syntax-property-color: ${c.accent_info || a[6]};
+    --syntax-variable-color: ${c.fg};
+    --syntax-tag-color: ${c.accent || a[5]};
+    --syntax-punctuation-color: ${c.fg_dim};
+    --syntax-regexp-color: ${c.accent};
+
+    /* Markdown Editor specific tokens */
+    --md-heading-color: ${c.accent};
+    --md-h1-color: ${a[1]};
+    --md-h2-color: ${c.warn};
+    --md-h3-color: ${a[3]};
+    --md-h4-color: ${a[2]};
+    --md-h5-color: ${c.blue || a[4]};
+    --md-h6-color: ${c.accent_alt || a[5]};
+    --md-link-color: ${c.blue || a[4]};
+    --md-code-color: ${c.warn};
+    --md-code-background: ${c.bg_alt};
+    --md-blockquote-color: ${c.fg_muted};
+    --md-blockquote-border-color: ${c.accent};
+    --md-list-mark-color: ${c.accent};
+    --md-list-mark-2-color: ${c.accent_alt || a[5]};
+    --md-list-mark-3-color: ${c.accent_info || a[6]};
+  }
+}
+
+@layer theme.preview {
+  :root {
+    --mde-preview-bg: ${c.bg};
+    --mde-preview-color: ${c.fg};
+    --mde-preview-heading-color: ${c.accent};
+    --mde-preview-h1-color: ${a[1]};
+    --mde-preview-h2-color: ${c.warn};
+    --mde-preview-h3-color: ${a[3]};
+    --mde-preview-h4-color: ${a[2]};
+    --mde-preview-h5-color: ${c.blue || a[4]};
+    --mde-preview-h6-color: ${c.accent_alt || a[5]};
+    --mde-preview-link-color: ${c.blue || a[4]};
+    --mde-preview-code-color: ${c.warn};
+    --mde-preview-code-background: ${c.bg_alt};
+    --mde-preview-blockquote-color: ${c.fg_muted};
+    --mde-preview-blockquote-border: ${c.accent};
+    --mde-preview-table-border: ${c.border};
+    --mde-preview-table-header-bg: ${c.surface};
+    --mde-preview-hr-color: ${c.surface_hi};
+    --mde-preview-list-marker-color: ${c.accent};
+    --mde-preview-list-marker-2-color: ${c.accent_alt || a[5]};
+    --mde-preview-list-marker-3-color: ${c.accent_info || a[6]};
+  }
+}
+`;
+    },
+  },
 ];

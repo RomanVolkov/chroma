@@ -119,6 +119,13 @@ function runTests() {
   const r10 = importThemeFile(xrContent, '.Xresources');
   assert(r10.success && r10.confidence >= 90, `Xresources imported with confidence ${r10.confidence}% >= 90%`);
 
+  // 11. Test Inkdrop export & import
+  const inkdropExp = EXPORTERS.find(e => e.id === 'inkdrop')!;
+  const inkdropContent = inkdropExp.generate(sampleScheme);
+  const r11 = importThemeFile(inkdropContent, 'inkdrop-theme.css');
+  assert(r11.success && r11.confidence >= 90, `Inkdrop imported with confidence ${r11.confidence}% >= 90%`);
+  assert(r11.scheme?.colors.bg === '#0d0e15', `Inkdrop colors bg matched: ${r11.scheme?.colors.bg}`);
+
   // --- Strict Negative Tests (< 90% Confidence Rejection) ---
   console.log('\n--- Testing Rejection of Ambiguous / Low-Confidence Files ---');
 

@@ -542,6 +542,65 @@ function parseXresources(content: string, filename: string): ImportResult | null
   };
 }
 
+// 12. Inkdrop CSS Parser (v6+)
+function parseInkdrop(content: string, filename: string): ImportResult | null {
+  const hasSyntaxLayer = content.includes('@layer theme.syntax');
+  const hasUiLayer = content.includes('@layer theme.ui');
+  const hasEditorBg = /--editor-background(?:-color)?:\s*(#[0-9a-fA-F]{6})/i.test(content);
+  const hasSyntaxKw = /--syntax-keyword-color:\s*(#[0-9a-fA-F]{6})/i.test(content);
+  const hasPageBg = /--page-background:\s*(#[0-9a-fA-F]{6})/i.test(content);
+
+  let confidence = 0;
+  if (hasSyntaxLayer) confidence += 40;
+  if (hasUiLayer) confidence += 30;
+  if (hasEditorBg) confidence += 20;
+  if (hasSyntaxKw) confidence += 15;
+  if (hasPageBg) confidence += 10;
+  if (filename.toLowerCase().includes('inkdrop')) confidence += 10;
+
+  if (confidence < 90) return null;
+
+  const bg = cleanHex(content.match(/--editor-background(?:-color)?:\s*(#[0-9a-fA-F]{6})/i)?.[1])
+    || cleanHex(content.match(/--page-background:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const fg = cleanHex(content.match(/--editor-foreground(?:-color)?:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const cursor = cleanHex(content.match(/--editor-caret-color:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const selBg = cleanHex(content.match(/--editor-selection-background:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const accent = cleanHex(content.match(/--primary-color:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const keyword = cleanHex(content.match(/--syntax-keyword-color:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const fn = cleanHex(content.match(/--syntax-function-color:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const type = cleanHex(content.match(/--syntax-type-color:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const str = cleanHex(content.match(/--syntax-string-color:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+  const warn = cleanHex(content.match(/--syntax-number-color:\s*(#[0-9a-fA-F]{6})/i)?.[1]);
+
+  const ansi: string[] = [];
+  if (bg) ansi[0] = bg;
+  if (str) ansi[2] = str;
+  if (warn) ansi[3] = warn;
+  if (fn) ansi[4] = fn;
+  if (keyword) ansi[5] = keyword;
+  if (type) ansi[6] = type;
+  if (fg) ansi[7] = fg;
+
+  const name = filename.replace(/^inkdrop-|\.css$/gi, '') || 'Inkdrop Theme';
+
+  return {
+    success: true,
+    confidence: Math.min(100, confidence),
+    formatName: 'Inkdrop',
+    scheme: normalizeScheme(name, 'dark', {
+      bg: bg || undefined,
+      fg: fg || undefined,
+      cursor: cursor || undefined,
+      selection_bg: selBg || undefined,
+      accent: accent || fn || undefined,
+      accent_alt: keyword || undefined,
+      accent_info: type || undefined,
+      warn: warn || undefined,
+      blue: fn || undefined,
+    }, ansi),
+  };
+}
+
 // Master Dispatcher with >= 90% Confidence Enforcement
 export function importThemeFile(content: string, filename: string = 'theme'): ImportResult {
   if (!content || content.trim().length === 0) {
@@ -565,6 +624,7 @@ export function importThemeFile(content: string, filename: string = 'theme'): Im
     parseWezTerm,
     parseFoot,
     parseXresources,
+    parseInkdrop,
   ];
 
   for (const parser of parsers) {

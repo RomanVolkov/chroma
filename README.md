@@ -36,17 +36,17 @@ The main goal of Chroma is to create color schemes from images or from existing 
 - **Live Preview**: Syntax-highlighted code editor preview across 9 languages (TypeScript, Go, Rust, C, C++, Bash, Python, Lua, and Markdown).
 - **Contrast Check & Auto-Fix**: Checks readability against background with a one-click button to fix low-contrast text.
 - **Adjustments**: Sliders to tweak brightness, contrast, saturation, warmth, and hue.
-- **50 Exporters**: Export into Neovim, VS Code, Kitty, Alacritty, Ghostty, WezTerm, Helix, Zed, Tmux, Starship, and 40 more tools (or download all in a ZIP).
-- **Import**: Load existing theme configs (Dotfiles TOML, Kitty, Alacritty, Ghostty, VS Code, Base16, WezTerm, Foot, Xresources) to preview or edit them.
+- **51 Exporters**: Export into Neovim, VS Code, Kitty, Alacritty, Ghostty, WezTerm, Helix, Zed, Inkdrop, Tmux, Starship, and 40 more tools (or download all in a ZIP).
+- **Import**: Load existing theme configs (Dotfiles TOML, Kitty, Alacritty, Ghostty, VS Code, Base16, WezTerm, Foot, Xresources, Inkdrop) to preview or edit them.
 
 ---
 
 ## Supported Tools
 
-### Export Formats (50)
+### Export Formats (51)
 | Category | Supported Tools |
 | :--- | :--- |
-| **Editors & IDEs** | Neovim, Vim, VS Code, JetBrains / IDEA, Emacs, Zed, Helix, Sublime Text, Micro |
+| **Editors & IDEs** | Neovim, Vim, VS Code, JetBrains / IDEA, Emacs, Zed, Helix, Sublime Text, Micro, Inkdrop |
 | **Terminals** | Kitty, Ghostty, Alacritty, WezTerm, Warp, Windows Terminal, Foot, Zellij, iTerm2, Rio, Xresources |
 | **Shells & Multiplexers** | Tmux, Starship, Fish, Zsh Syntax Highlighting, Nushell |
 | **CLI & TUI Utilities** | Bat, Delta, Fzf, Btop, Bottom, Lazygit, Yazi, Tig, K9s |
@@ -66,6 +66,7 @@ The main goal of Chroma is to create color schemes from images or from existing 
 - WezTerm Lua (`colors = { ... }`)
 - Foot INI (`[colors]`, `regular0`–`regular7`)
 - Xresources (`*.background`, `*.color0`–`*.color15`)
+- Inkdrop CSS (`@layer theme.ui`, `@layer theme.syntax`, `--editor-*`)
 
 ---
 
