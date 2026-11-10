@@ -12,6 +12,12 @@ function getSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'theme';
 }
 
+export function slugify(input: any): string {
+  if (typeof input === 'string') return getSlug(input);
+  if (input && typeof input.name === 'string') return getSlug(input.name);
+  return 'theme';
+}
+
 function hexNoHash(hex: string): string {
   return hex.replace('#', '');
 }
@@ -1476,7 +1482,7 @@ settings set prompt "${c.accent}❯${c.fg} "
     id: 'inkdrop',
     name: 'Inkdrop (v6+)',
     category: 'Editor',
-    filename: (s) => `inkdrop-${slugify(s.name)}.css`,
+    filename: (s) => `inkdrop-${s}.css`,
     generate: (s) => {
       const c = s.colors;
       const a = s.ansi.colors;

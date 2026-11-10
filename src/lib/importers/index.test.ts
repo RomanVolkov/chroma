@@ -126,6 +126,20 @@ function runTests() {
   assert(r11.success && r11.confidence >= 90, `Inkdrop imported with confidence ${r11.confidence}% >= 90%`);
   assert(r11.scheme?.colors.bg === '#0d0e15', `Inkdrop colors bg matched: ${r11.scheme?.colors.bg}`);
 
+  // 12. Exhaustive check of all EXPORTERS: filename(slug) and generate(sampleScheme)
+  console.log('\n--- Testing All Exporters (filename & generate) ---');
+  for (const exp of EXPORTERS) {
+    try {
+      const slug = 'cyberpunk-neon';
+      const fname = exp.filename(slug);
+      const content = exp.generate(sampleScheme);
+      assert(typeof fname === 'string' && fname.length > 0, `Exporter [${exp.id}] generated valid filename: ${fname}`);
+      assert(typeof content === 'string' && content.length > 0, `Exporter [${exp.id}] generated valid content`);
+    } catch (err: any) {
+      assert(false, `Exporter [${exp.id}] threw error: ${err?.message || err}`);
+    }
+  }
+
   // --- Strict Negative Tests (< 90% Confidence Rejection) ---
   console.log('\n--- Testing Rejection of Ambiguous / Low-Confidence Files ---');
 
