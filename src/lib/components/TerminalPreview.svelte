@@ -43,22 +43,22 @@
       case 'comment':
         return { type: 'base', key: 'fg_muted', label: 'fg_muted', roleName: 'Comment' };
       case 'keyword':
-        return { type: 'base', key: 'accent_alt', label: 'accent_alt', roleName: 'Keyword' };
+        return { type: 'base', key: 'accent_alt', label: 'accent_alt (Keyword)', roleName: 'Keyword' };
       case 'function':
-        return { type: 'base', key: 'accent', label: 'accent', roleName: 'Function' };
+        return { type: 'base', key: 'blue', label: 'blue (Function)', roleName: 'Function' };
       case 'type':
-        return { type: 'base', key: 'accent_info', label: 'accent_info', roleName: 'Type' };
+        return { type: 'base', key: 'accent_info', label: 'accent_info (Type)', roleName: 'Type' };
       case 'string':
         return { type: 'ansi', key: 2, label: 'ANSI green', roleName: 'String' };
       case 'number':
       case 'boolean':
-        return { type: 'base', key: 'warn', label: 'warn', roleName: 'Number/Boolean' };
+        return { type: 'base', key: 'warn', label: 'warn (Constant)', roleName: 'Constant/Number' };
       case 'property':
-        return { type: 'base', key: 'blue', label: 'blue', roleName: 'Property' };
+        return { type: 'base', key: 'accent_info', label: 'accent_info (Property)', roleName: 'Property' };
       case 'variable':
         return { type: 'base', key: 'fg', label: 'fg', roleName: 'Variable' };
       case 'operator':
-        return { type: 'base', key: 'accent_alt', label: 'accent_alt', roleName: 'Operator' };
+        return { type: 'base', key: 'accent_info', label: 'accent_info (Operator)', roleName: 'Operator' };
       case 'tag':
         return { type: 'base', key: 'accent', label: 'accent', roleName: 'Tag' };
       case 'punctuation':
@@ -134,28 +134,29 @@
     }
 
     const c = theme.scheme.colors;
+    const a = theme.scheme.ansi.colors;
     switch (token.type) {
       case 'comment':
         return `color: ${c.fg_muted}; font-style: italic;`;
       case 'keyword':
-        return `color: ${c.accent_alt}; font-weight: 600;`;
+        return `color: ${c.accent_alt || a[5]}; font-weight: 600;`;
       case 'function':
-        return `color: ${c.accent}; font-weight: 600;`;
+        return `color: ${c.blue || a[4]}; font-weight: 600;`;
       case 'type':
-        return `color: ${c.accent_info};`;
+        return `color: ${c.accent_info || a[6]};`;
       case 'string':
-        return `color: ${theme.scheme.ansi.colors[2]};`;
+        return `color: ${a[2]};`;
       case 'number':
       case 'boolean':
-        return `color: ${c.warn};`;
+        return `color: ${c.warn || a[3]};`;
       case 'property':
-        return `color: ${c.blue};`;
+        return `color: ${c.accent_info || a[6]};`;
       case 'variable':
         return `color: ${c.fg};`;
       case 'operator':
-        return `color: ${c.accent_alt};`;
+        return `color: ${c.accent_info || a[6]};`;
       case 'tag':
-        return `color: ${c.accent}; font-weight: 600;`;
+        return `color: ${c.accent || a[5]}; font-weight: 600;`;
       case 'punctuation':
         return `color: ${c.fg_dim};`;
       default:

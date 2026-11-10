@@ -69,44 +69,29 @@ func MapSwatchesToScheme(name string, variant string, swatches []Swatch) Scheme 
 	bgRGB, _ := HexToRGB(colors.Bg)
 	isDark := variant == "dark"
 
-	// Ensure Accents never merge with Bg and meet WCAG AA contrast (>= 4.5:1)
+	// Standard hue targets: Yellow(65), Blue(240), Magenta(310), Cyan(190)
+	yellow := EnsureContrastHex(findClosestHue(byChroma, 65.0).Hex, bgRGB, 4.5, isDark)
+	blue := EnsureContrastHex(findClosestHue(byChroma, 240.0).Hex, bgRGB, 4.5, isDark)
+	magenta := EnsureContrastHex(findClosestHue(byChroma, 310.0).Hex, bgRGB, 4.5, isDark)
+	cyan := EnsureContrastHex(findClosestHue(byChroma, 190.0).Hex, bgRGB, 4.5, isDark)
+
+	// Primary Accent: dominant vibrant color
 	colors.Accent = EnsureContrastHex(byChroma[0].Hex, bgRGB, 4.5, isDark)
 	colors.Cursor = colors.Accent
 
-	// Find distinct second accent (different hue angle)
-	firstHue := byChroma[0].Lab.Hue()
-	secondAccent := byChroma[0]
-	for _, s := range byChroma[1:] {
-		diff := math.Abs(s.Lab.Hue() - firstHue)
-		if diff > 180 {
-			diff = 360 - diff
-		}
-		if diff > 45.0 {
-			secondAccent = s
-			break
-		}
+	// Synchronize base roles with ANSI spectrum for 1:1 editor parity:
+	// - AccentAlt <-> Magenta (ansi[5] - keywords & control flow)
+	// - Blue <-> Blue (ansi[4] - functions & declarations)
+	// - AccentInfo <-> Cyan (ansi[6] - types, structs, & properties)
+	// - Warn <-> Yellow (ansi[3] - numbers, booleans, & constants)
+	colors.AccentAlt = magenta
+	colors.Blue = blue
+	colors.AccentInfo = cyan
+	colors.Warn = yellow
+
+	if colors.Accent == colors.AccentAlt {
+		colors.Accent = blue
 	}
-	colors.AccentAlt = EnsureContrastHex(secondAccent.Hex, bgRGB, 4.5, isDark)
-
-	// If AccentAlt accidentally ended up identical to Accent, adjust hue angle
-	if colors.AccentAlt == colors.Accent {
-		lab := RGBToLab(mustRGB(colors.AccentAlt))
-		lab.A = -lab.A
-		lab.B = -lab.B
-		colors.AccentAlt = EnsureContrastHex(RGBToHex(LabToRGB(lab)), bgRGB, 4.5, isDark)
-	}
-
-	// Find warm hue (amber/orange/red ~ 20-70 deg)
-	warnSwatch := findClosestHue(byChroma, 40.0)
-	colors.Warn = EnsureContrastHex(warnSwatch.Hex, bgRGB, 4.5, isDark)
-
-	// Find blue hue (~ 230-260 deg)
-	blueSwatch := findClosestHue(byChroma, 240.0)
-	colors.Blue = EnsureContrastHex(blueSwatch.Hex, bgRGB, 4.5, isDark)
-
-	// Info accent (cyan/teal ~ 180-210 deg)
-	infoSwatch := findClosestHue(byChroma, 195.0)
-	colors.AccentInfo = EnsureContrastHex(infoSwatch.Hex, bgRGB, 4.5, isDark)
 
 	// Guard: Ensure Foreground text meets high contrast against background
 	colors.Fg = EnsureContrastHex(colors.Fg, bgRGB, 7.0, isDark)
@@ -174,19 +159,15 @@ func generateANSI(colors Colors, swatches []Swatch, variant string) ANSI {
 	bgRGB, _ := HexToRGB(colors.Bg)
 	isDark := variant == "dark"
 
-	// Standard hue targets: Red(20), Green(130), Yellow(65), Blue(240), Magenta(310), Cyan(190)
+	// Hue targets for ANSI slots 1 (red) and 2 (green)
 	red := EnsureContrastHex(findClosestHue(swatches, 20.0).Hex, bgRGB, 4.5, isDark)
 	green := EnsureContrastHex(findClosestHue(swatches, 130.0).Hex, bgRGB, 4.5, isDark)
-	yellow := EnsureContrastHex(findClosestHue(swatches, 65.0).Hex, bgRGB, 4.5, isDark)
-	blue := EnsureContrastHex(findClosestHue(swatches, 240.0).Hex, bgRGB, 4.5, isDark)
-	magenta := EnsureContrastHex(findClosestHue(swatches, 310.0).Hex, bgRGB, 4.5, isDark)
-	cyan := EnsureContrastHex(findClosestHue(swatches, 190.0).Hex, bgRGB, 4.5, isDark)
 
 	var normal [8]string
 	if variant == "dark" {
-		normal = [8]string{colors.Surface, red, green, yellow, blue, magenta, cyan, colors.Fg}
+		normal = [8]string{colors.Surface, red, green, colors.Warn, colors.Blue, colors.AccentAlt, colors.AccentInfo, colors.Fg}
 	} else {
-		normal = [8]string{colors.Fg, red, green, yellow, blue, magenta, cyan, colors.Surface}
+		normal = [8]string{colors.Fg, red, green, colors.Warn, colors.Blue, colors.AccentAlt, colors.AccentInfo, colors.Surface}
 	}
 
 	var ansi ANSI

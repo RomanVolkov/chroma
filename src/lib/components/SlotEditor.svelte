@@ -56,11 +56,19 @@
 
   function changeBase(key: keyof SchemeColors, hex: string) {
     theme.scheme.colors[key] = hex;
+    if (key === 'accent_alt') theme.scheme.ansi.colors[5] = hex;
+    else if (key === 'blue') theme.scheme.ansi.colors[4] = hex;
+    else if (key === 'accent_info') theme.scheme.ansi.colors[6] = hex;
+    else if (key === 'warn') theme.scheme.ansi.colors[3] = hex;
     theme.updateToml();
   }
 
   function changeAnsi(index: number, hex: string) {
     theme.scheme.ansi.colors[index] = hex;
+    if (index === 5) theme.scheme.colors.accent_alt = hex;
+    else if (index === 4) theme.scheme.colors.blue = hex;
+    else if (index === 6) theme.scheme.colors.accent_info = hex;
+    else if (index === 3) theme.scheme.colors.warn = hex;
     theme.updateToml();
   }
 

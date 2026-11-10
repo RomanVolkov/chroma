@@ -281,12 +281,20 @@ export class ThemeStore {
     if (this.activeSlot.type === 'base') {
       const key = this.activeSlot.key as keyof SchemeColors;
       this.scheme.colors[key] = hex;
+      if (key === 'accent_alt') this.scheme.ansi.colors[5] = hex;
+      else if (key === 'blue') this.scheme.ansi.colors[4] = hex;
+      else if (key === 'accent_info') this.scheme.ansi.colors[6] = hex;
+      else if (key === 'warn') this.scheme.ansi.colors[3] = hex;
     } else if (this.activeSlot.type === 'ansi') {
       const idx = this.activeSlot.key as number;
       this.scheme.ansi.colors[idx] = hex;
+      if (idx === 5) this.scheme.colors.accent_alt = hex;
+      else if (idx === 4) this.scheme.colors.blue = hex;
+      else if (idx === 6) this.scheme.colors.accent_info = hex;
+      else if (idx === 3) this.scheme.colors.warn = hex;
     }
 
-    await this.updateToml();
+    this.updateToml();
   }
 
   async importTheme(file: File): Promise<ImportResult> {

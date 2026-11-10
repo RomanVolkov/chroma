@@ -104,12 +104,12 @@ hl(0, "Comment", { fg = "${c.fg_muted}", italic = true })
 hl(0, "Constant", { fg = "${c.warn}" })
 hl(0, "String", { fg = "${s.ansi.colors[2]}" })
 hl(0, "Identifier", { fg = "${c.fg}" })
-hl(0, "Function", { fg = "${c.accent}", bold = true })
-hl(0, "Statement", { fg = "${c.accent_alt}" })
-hl(0, "Operator", { fg = "${c.fg_dim}" })
-hl(0, "Keyword", { fg = "${c.accent_alt}", bold = true })
+hl(0, "Function", { fg = "${c.blue}", bold = true })
+hl(0, "Statement", { fg = "${s.ansi.colors[5]}" })
+hl(0, "Operator", { fg = "${s.ansi.colors[6]}" })
+hl(0, "Keyword", { fg = "${s.ansi.colors[5]}", bold = true })
 hl(0, "Type", { fg = "${c.accent_info}" })
-hl(0, "Special", { fg = "${c.blue}" })
+hl(0, "Special", { fg = "${c.accent}" })
 `;
     },
   },
