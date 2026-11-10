@@ -19,6 +19,13 @@
 
   const isLowContrast = $derived(contrastRatio < 4.5 || selectionRatio < 3.0);
 
+  const isFgMutedActive = $derived(
+    theme.activeSlot?.type === 'base' && theme.activeSlot?.key === 'fg_muted'
+  );
+  const isFgMutedHovered = $derived(
+    theme.hoveredSlot?.type === 'base' && theme.hoveredSlot?.key === 'fg_muted'
+  );
+
   function fixContrast() {
     theme.scheme.colors = autoFixContrast(theme.scheme.colors, theme.scheme.variant);
     theme.updateToml();
@@ -218,9 +225,22 @@
     title="Click empty canvas to select background color"
   >
     <!-- Line numbers gutter -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="select-none pr-4 mr-4 border-r text-right space-y-0.5 shrink-0 opacity-40 font-mono text-[11.5px]"
+      onmouseenter={() => theme.setHoveredSlot({ type: 'base', key: 'fg_muted', label: 'fg_muted' })}
+      onmouseleave={() => theme.setHoveredSlot(null)}
+      onclick={(e) => {
+        e.stopPropagation();
+        if (theme.activeSlot?.type === 'base' && theme.activeSlot?.key === 'fg_muted') {
+          theme.setActiveSlot(null);
+        } else {
+          theme.setActiveSlot({ type: 'base', key: 'fg_muted', label: 'fg_muted' });
+        }
+      }}
+      class="select-none pr-4 mr-4 border-r text-right space-y-0.5 shrink-0 font-mono text-[11.5px] cursor-pointer transition-all px-0.5 -mx-0.5 rounded-xs {isFgMutedActive ? 'ring-2 ring-indigo-400 bg-indigo-500/25 font-bold shadow-xs' : isFgMutedHovered ? 'ring-1 ring-indigo-300/80 bg-white/15' : ''}"
       style="color: {theme.scheme.colors.fg_muted}; border-color: {theme.scheme.colors.border};"
+      title="Click to edit Line Numbers / Comments (fg_muted: {theme.scheme.colors.fg_muted})"
     >
       {#each activeSnippet.lines as _, i}
         <div>{i + 1}</div>
